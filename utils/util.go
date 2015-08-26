@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ func FileExt(file string) string {
 
 func FileName(file string) string {
 	name := strings.TrimSuffix(file, FileExt(file))
-	if i := strings.LastIndex(file, "/"); i > -1 {
+	if i := strings.LastIndex(file, DirSep()); i > -1 {
 		name = name[i+1:]
 	}
 	return name
@@ -31,7 +32,7 @@ func FileBaseName(file string) string {
 
 func FileBaseDir(file string) string {
 	name := file
-	if i := strings.LastIndex(file, "/"); i > -1 {
+	if i := strings.LastIndex(file, DirSep()); i > -1 {
 		name = name[:i+1]
 	}
 	return name
@@ -111,6 +112,19 @@ func IsChineseChar(str string) bool {
 		}
 	}
 	return false
+}
+
+func DirSep() (s string) {
+	switch os := runtime.GOOS; os {
+	case "darwin":
+		s = "/"
+		fmt.Println("OS X.")
+	case "linux":
+		s = "/"
+	default:
+		s = "\\"
+	}
+	return s
 }
 
 func ExecCMD(cmdstr string) (string, error) {
