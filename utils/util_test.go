@@ -50,6 +50,10 @@ func TestUtil(t *testing.T) {
 		So(IsChineseChar("是否含有中文"), ShouldEqual, true)
 	})
 
+	Convey("文件夹分隔", t, func() {
+		So(DirSep(), ShouldEqual, "/")
+	})
+
 	Convey("运行命令", t, func() {
 		value, _ := ExecCMD("echo hello world")
 		So(value, ShouldEqual, "hello world")
