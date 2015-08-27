@@ -14,6 +14,12 @@ import (
 	"unicode"
 )
 
+const (
+	DARWIN = iota
+	LINUX
+	OTHERSYSTEM
+)
+
 func FileExt(file string) string {
 	return path.Ext(file)
 }
@@ -125,6 +131,18 @@ func DirSep() (s string) {
 		s = "\\"
 	}
 	return s
+}
+
+func System() (i int) {
+	switch os := runtime.GOOS; os {
+	case "darwin":
+		i = DARWIN
+	case "linux":
+		i = LINUX
+	default:
+		i = OTHERSYSTEM
+	}
+	return i
 }
 
 func ExecCMD(cmdstr string) (string, error) {
