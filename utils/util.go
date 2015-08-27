@@ -124,7 +124,6 @@ func DirSep() (s string) {
 	switch os := runtime.GOOS; os {
 	case "darwin":
 		s = "/"
-		fmt.Println("OS X.")
 	case "linux":
 		s = "/"
 	default:

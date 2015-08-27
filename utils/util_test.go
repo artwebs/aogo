@@ -2,6 +2,8 @@ package util
 
 import (
 	. "github.com/smartystreets/goconvey/convey"
+	"log"
+	"os"
 	"testing"
 )
 
@@ -54,6 +56,11 @@ func TestUtil(t *testing.T) {
 		So(DirSep(), ShouldEqual, "/")
 	})
 
+	Convey("获取系统类型", t, func() {
+		So(System(), ShouldEqual, DARWIN)
+	})
+
+	log.Println("-->", os.Environ()["GOCHAR"])
 	Convey("运行命令", t, func() {
 		value, _ := ExecCMD("echo hello world")
 		So(value, ShouldEqual, "hello world")
