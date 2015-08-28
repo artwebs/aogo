@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestUtil(t *testing.T) {
-	filename := "/data/temp/abc.txt"
+func TestWinUtil(t *testing.T) {
+	filename := "f:\\temp\\abc.txt"
 	Convey("获取文件扩张名", t, func() {
 		So(FileExt(filename), ShouldEqual, ".txt")
 	})
@@ -19,7 +19,7 @@ func TestUtil(t *testing.T) {
 		So(FileBaseName(filename), ShouldEqual, "abc.txt")
 	})
 	Convey("获取目录名称", t, func() {
-		So(FileBaseDir(filename), ShouldEqual, "/data/temp/")
+		So(FileBaseDir(filename), ShouldEqual, "f:\\temp\\")
 	})
 
 	Convey("文件及文件夹是否存在", t, func() {
@@ -53,14 +53,13 @@ func TestUtil(t *testing.T) {
 	})
 
 	Convey("文件夹分隔", t, func() {
-		So(DirSep(), ShouldEqual, "/")
+		So(DirSep(), ShouldEqual, "\\")
 	})
 
 	Convey("获取系统类型", t, func() {
-		So(System(), ShouldEqual, DARWIN)
+		So(System(), ShouldEqual, OTHERSYSTEM)
 	})
 
-	// log.Println("-->", os.Environ()["GOCHAR"])
 	Convey("运行命令", t, func() {
 		value, _ := ExecCMD("echo hello world")
 		So(value, ShouldEqual, "hello world")

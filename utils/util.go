@@ -33,7 +33,11 @@ func FileName(file string) string {
 }
 
 func FileBaseName(file string) string {
-	return path.Base(file)
+	name := file
+	if i := strings.LastIndex(file, DirSep()); i > -1 {
+		name = name[i+1:]
+	}
+	return name
 }
 
 func FileBaseDir(file string) string {
