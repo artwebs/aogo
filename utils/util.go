@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -33,7 +34,11 @@ func FileName(file string) string {
 }
 
 func FileBaseName(file string) string {
-	return path.Base(file)
+	name := file
+	if i := strings.LastIndex(file, DirSep()); i > -1 {
+		name = name[i+1:]
+	}
+	return name
 }
 
 func FileBaseDir(file string) string {
@@ -54,6 +59,22 @@ func FileIsExist(file string) bool {
 
 func FileRemove(file string) error {
 	return os.RemoveAll(file)
+}
+
+func FileCopy(src, des string) (w int64, err error) {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		log.Println(err)
+	}
+	defer srcFile.Close()
+
+	desFile, err := os.Create(des)
+	if err != nil {
+		log.Println(err)
+	}
+	defer desFile.Close()
+
+	return io.Copy(desFile, srcFile)
 }
 
 func StringSearch(s, ex string) (group []string) {
