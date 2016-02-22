@@ -1,14 +1,14 @@
 package web
 
 import (
+	aolog "github.com/artwebs/aogo/log"
 	"log"
 	"net/http"
-
 	"time"
 )
 
 var (
-	register *ControllerRegister
+	register *ControllerRegistor
 )
 
 type Handler struct {
@@ -17,7 +17,10 @@ type Handler struct {
 }
 
 func init() {
-	register = NewControllerRegister()
+	register = NewControllerRegistor()
+	aolog.NewLogger(1000)
+	aolog.SetLogger("console", "")
+	aolog.SetLevel(aolog.LevelDebug)
 }
 
 func Run() {

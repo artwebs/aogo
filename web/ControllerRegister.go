@@ -5,15 +5,15 @@ import (
 	"reflect"
 )
 
-type ControllerRegister struct {
+type ControllerRegistor struct {
 	routes map[string]*Handler
 }
 
-func NewControllerRegister() *ControllerRegister {
-	return &ControllerRegister{routes: make(map[string]*Handler)}
+func NewControllerRegistor() *ControllerRegistor {
+	return &ControllerRegistor{routes: make(map[string]*Handler)}
 }
 
-func (this *ControllerRegister) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if handler, ok := this.routes[r.URL.String()]; ok {
 		handler.controller.Init(w, r)
