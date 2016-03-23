@@ -21,7 +21,16 @@ func (this *TestController) TestTpl() {
 }
 
 func webRun() {
-	web.Router("/test", &TestController{}, "Index")
+	web.Router("/tet", &TestController{}, "Index")
 	web.Router("/tpl", &TestController{}, "TestTpl")
+	web.AutoRouter("/", &TestController{})
+	ns := web.NewNamespace("/ns",
+		web.NSRouter("/demo", &TestController{}, "TestTpl"),
+		web.NSRouter("/demo1", &TestController{}, "Index"),
+		web.NSNamespace("/demo2",
+			web.NSRouter("/demo1", &TestController{}, "Index"),
+		),
+	)
+	web.AddNamespace(ns)
 	web.Run()
 }
