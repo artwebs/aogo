@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path"
@@ -173,4 +174,15 @@ func ExecCMD(cmdstr string) (string, error) {
 		log.Println("exec", cmdstr, err)
 	}
 	return strings.TrimSpace(string(output)), err
+}
+
+func RandomBytes(size int) []byte {
+	ikind, kinds, result := 0, [][]int{[]int{10, 48}, []int{26, 97}, []int{26, 65}}, make([]byte, size)
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < size; i++ {
+		ikind = rand.Intn(3)
+		scope, base := kinds[ikind][0], kinds[ikind][1]
+		result[i] = uint8(base + rand.Intn(scope))
+	}
+	return result
 }
