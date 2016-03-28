@@ -30,6 +30,7 @@ func webRun() {
 		web.NSNamespace("/demo2",
 			web.NSRouter("/demo1", &TestController{}, "Index"),
 		),
+		web.NSAutoRouter("/", &TestController{}),
 	)
 	web.AddNamespace(ns)
 	web.Run()
