@@ -14,7 +14,12 @@ func (this *TestController) Index() {
 		this.SetSession("user", user)
 	}
 	aolog.Info(this.Data)
-	this.Writer.Write([]byte("artwebs"))
+	tmp := make(map[string]interface{})
+	tmp["a"] = 1
+	tmp["b"] = "jom"
+	this.WriteJson(tmp)
+	// this.WriteString("artwebs")
+	// this.WriteString("artwebs1")
 }
 
 func (this *TestController) TestTpl() {
@@ -34,9 +39,9 @@ func (this *TestController) Upload() {
 func (this *TestController) Save() {
 	err := this.SaveToFile("UpLoadFile", "")
 	if err == nil {
-		this.Writer.Write([]byte("success"))
+		this.WriteString("success")
 	} else {
-		this.Writer.Write([]byte("fail"))
+		this.WriteString("fail")
 	}
 }
 

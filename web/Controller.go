@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"html/template"
 	"io"
 	"log"
@@ -12,8 +13,8 @@ import (
 
 type Controller struct {
 	ctl, fun string
-	Writer   http.ResponseWriter
-	Request  *http.Request
+	w        http.ResponseWriter
+	r        *http.Request
 	Form     map[string]interface{}
 	Data     map[string]interface{}
 	session  *Session
@@ -22,6 +23,9 @@ type Controller struct {
 type ControllerInterface interface {
 	Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string)
 	SetUrl(arr []string)
+	Redirect(url string)
+	WriteString(str string)
+	WriteJson(obj interface{})
 	Release()
 	SetSession(key, value interface{})
 	GetSession(key interface{}) interface{}
@@ -32,8 +36,8 @@ type ControllerInterface interface {
 func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string) {
 	this.ctl = strings.TrimSuffix(reflect.Indirect(reflect.ValueOf(ctl)).Type().Name(), "Controller")
 	this.fun = fun
-	this.Writer = w
-	this.Request = r
+	this.w = w
+	this.r = r
 	this.Data = make(map[string]interface{})
 	this.Form = make(map[string]interface{})
 	if len(data)%2 == 0 {
@@ -63,26 +67,45 @@ func (this *Controller) SetUrl(arr []string) {
 	this.Data["nspace"] = strings.Join(arr[:len(arr)-2], "/")
 }
 
+func (this *Controller) Redirect(url string) {
+	http.Redirect(this.w, this.r, url, http.StatusFound)
+}
+
+func (this *Controller) WriteString(str string) {
+	this.w.Write([]byte(str))
+}
+
+func (this *Controller) WriteJson(data interface{}) {
+
+	content, err := json.Marshal(data)
+	if err != nil {
+		log.Fatal("WriteJson Fail")
+		return
+	}
+	this.w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+	this.w.Write(content)
+}
+
 func (this *Controller) Display(args ...string) {
 	tpl := ""
 	if len(args) == 0 {
-		tpl = StaticPath + "/" + this.ctl + "/" + this.fun + "." + TemplateExt
+		tpl = ViewsPath + "/" + this.ctl + "/" + this.fun + "." + TemplateExt
 	} else if len(args) == 1 {
-		tpl = StaticPath + "/" + this.ctl + "/" + args[0] + "." + TemplateExt
+		tpl = ViewsPath + "/" + this.ctl + "/" + args[0] + "." + TemplateExt
 	} else {
-		tpl = StaticPath + "/" + args[1] + "/" + args[0] + "." + TemplateExt
+		tpl = ViewsPath + "/" + args[1] + "/" + args[0] + "." + TemplateExt
 	}
 	log.Println(tpl)
 	t, err := template.ParseFiles(tpl)
 	if err != nil {
 		log.Println(err)
 	}
-	t.Execute(this.Writer, this.Data)
+	t.Execute(this.w, this.Data)
 }
 
 func (this *Controller) Release() {
 	if this.session != nil {
-		defer this.session.Release(this.Writer)
+		defer this.session.Release(this.w)
 	}
 
 }
@@ -90,7 +113,7 @@ func (this *Controller) Release() {
 func (this *Controller) SetSession(key, value interface{}) {
 	if this.session == nil {
 		this.session = InitSession()
-		this.session.Start(this.Writer, this.Request)
+		this.session.Start(this.w, this.r)
 	}
 	this.session.Set(key, value)
 }
@@ -98,7 +121,7 @@ func (this *Controller) SetSession(key, value interface{}) {
 func (this *Controller) GetSession(key interface{}) interface{} {
 	if this.session == nil {
 		this.session = InitSession()
-		this.session.Start(this.Writer, this.Request)
+		this.session.Start(this.w, this.r)
 	}
 	return this.session.Get(key)
 }
@@ -106,7 +129,7 @@ func (this *Controller) GetSession(key interface{}) interface{} {
 func (this *Controller) FlushSession() {
 	if this.session == nil {
 		this.session = InitSession()
-		this.session.Start(this.Writer, this.Request)
+		this.session.Start(this.w, this.r)
 	}
 	this.session.Flush()
 }
@@ -118,7 +141,7 @@ func (this *Controller) SaveToFile(fromfile, tofile string) error {
 	if tofile == "" {
 		tofile = "[file].[ext]"
 	}
-	file, handle, err := this.Request.FormFile(fromfile)
+	file, handle, err := this.r.FormFile(fromfile)
 	if err != nil {
 		return err
 	}

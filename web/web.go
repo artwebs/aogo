@@ -14,7 +14,7 @@ import (
 
 var (
 	register     *ControllerRegistor
-	exceptMethod = []string{"Init", "Display", "Release", "SetSession", "GetSession", "FlushSession", "SaveToFile", "SetUrl"}
+	exceptMethod = []string{"Init", "Redirect", "WriteString", "Display", "WriteJson", "Release", "SetSession", "GetSession", "FlushSession", "SaveToFile", "SetUrl"}
 )
 
 type Handler struct {
@@ -34,9 +34,9 @@ func init() {
 func Run() {
 	log.Println(register.routes)
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}
-	http.Handle("/css/", http.FileServer(http.Dir(StaticPath)))
-	http.Handle("/js/", http.FileServer(http.Dir(StaticPath)))
-	http.Handle("/images/", http.FileServer(http.Dir(StaticPath)))
+	http.Handle("/css/", http.FileServer(http.Dir(ViewsPath)))
+	http.Handle("/js/", http.FileServer(http.Dir(ViewsPath)))
+	http.Handle("/images/", http.FileServer(http.Dir(ViewsPath)))
 	err := conn.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)

@@ -10,7 +10,7 @@ var (
 	HttpAddress = ""
 	HttpPort    = 8080
 
-	StaticPath  = "views"
+	ViewsPath   = "views"
 	TemplateExt = "html"
 )
 
