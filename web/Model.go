@@ -1,6 +1,21 @@
 package web
 
+import (
+	"database/sql"
+)
+
 type Model struct {
+	db             *sql.DB
+	driverName     string
+	dataSourceName string
+}
+
+func (this *Model) Conn() {
+	this.db = sql.Open(this.driverName, this.dataSourceName)
+}
+
+func (this *Model) Close() {
+	this.db.Close()
 }
 
 func (this *Model) Query() {
