@@ -1,4 +1,4 @@
-package util
+package utils
 
 func InSlice(v string, sl []string) bool {
 	for _, vv := range sl {

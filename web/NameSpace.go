@@ -53,7 +53,7 @@ func NSAutoRouter(rootpath string, c ControllerInterface) innnerNamespace {
 		ct := reflect.Indirect(reflectVal).Type()
 		controllerName := strings.TrimSuffix(ct.Name(), "Controller")
 		for i := 0; i < rt.NumMethod(); i++ {
-			if !util.InSlice(rt.Method(i).Name, exceptMethod) {
+			if !utils.InSlice(rt.Method(i).Name, exceptMethod) {
 				pattern := path.Join(rootpath, strings.ToLower(controllerName), strings.ToLower(rt.Method(i).Name))
 				ns.Router(pattern, c, rt.Method(i).Name)
 			}

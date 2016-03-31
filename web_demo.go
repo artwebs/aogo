@@ -10,14 +10,34 @@ type TestController struct {
 }
 
 func (this *TestController) Index() {
+	if user, ok := this.Form["user"]; ok {
+		this.SetSession("user", user)
+	}
+	aolog.Info(this.Data)
 	this.Writer.Write([]byte("artwebs"))
 }
 
 func (this *TestController) TestTpl() {
-
+	aolog.Info(this.GetSession("user"))
 	this.Data["name"] = "hello"
-	aolog.Debug("hello")
-	this.Display("TestTpl.html")
+	this.Display()
+}
+
+func (this *TestController) Loginout() {
+	this.FlushSession()
+}
+
+func (this *TestController) Upload() {
+	this.Display()
+}
+
+func (this *TestController) Save() {
+	err := this.SaveToFile("UpLoadFile", "")
+	if err == nil {
+		this.Writer.Write([]byte("success"))
+	} else {
+		this.Writer.Write([]byte("fail"))
+	}
 }
 
 func webRun() {

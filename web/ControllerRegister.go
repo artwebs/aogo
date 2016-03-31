@@ -1,7 +1,7 @@
 package web
 
 import (
-	"fmt"
+	// "fmt"
 	"net/http"
 	"reflect"
 	// "regexp"
@@ -21,8 +21,6 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 	for key, handler := range this.routes {
 		keyarr := strings.Split(key, "/")
 		urlarr := strings.Split(strings.Split(url, "?")[0], "/")
-		// reg := regexp.MustCompile(`^` + key + `\/*`)
-		// rsReg := reg.FindStringIndex(url)
 		if len(keyarr) > len(urlarr) {
 			continue
 		}
@@ -35,14 +33,16 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		goto success
 	success:
 		{
-			fmt.Println(urlarr[len(keyarr):])
-			handler.controller.Init(w, r, urlarr[len(keyarr):])
 			reflectVal := reflect.ValueOf(handler.controller)
+			data := urlarr[len(keyarr):]
+			handler.controller.Init(w, r, handler.controller, handler.method, data)
+			handler.controller.SetUrl(keyarr)
 			if val := reflectVal.MethodByName(handler.method); val.IsValid() {
 				val.Call([]reflect.Value{})
 			} else {
 				panic("'' method doesn't exist in the controller " + handler.method)
 			}
+			handler.controller.Release()
 			return
 		}
 	next:
@@ -52,13 +52,4 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 	}
 
-	// if handler, ok := this.routes[r.URL.String()]; ok {
-	// 	handler.controller.Init(w, r)
-	// 	reflectVal := reflect.ValueOf(handler.controller)
-	// 	if val := reflectVal.MethodByName(handler.method); val.IsValid() {
-	// 		val.Call([]reflect.Value{})
-	// 	} else {
-	// 		panic("'' method doesn't exist in the controller " + handler.method)
-	// 	}
-	// }
 }

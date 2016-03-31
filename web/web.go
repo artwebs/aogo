@@ -7,13 +7,14 @@ import (
 	"net/http"
 	"path"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
 
 var (
 	register     *ControllerRegistor
-	exceptMethod = []string{"Init", "Display"}
+	exceptMethod = []string{"Init", "Display", "Release", "SetSession", "GetSession", "FlushSession", "SaveToFile", "SetUrl"}
 )
 
 type Handler struct {
@@ -22,6 +23,8 @@ type Handler struct {
 }
 
 func init() {
+	InitAppConfig()
+	InitSession()
 	register = NewControllerRegistor()
 	aolog.NewLogger(1000)
 	aolog.SetLogger("console", "")
@@ -30,10 +33,10 @@ func init() {
 
 func Run() {
 	log.Println(register.routes)
-	conn := &http.Server{Addr: ":8080", Handler: register, ReadTimeout: 5 * time.Second}
-	http.Handle("/css/", http.FileServer(http.Dir("")))
-	http.Handle("/js/", http.FileServer(http.Dir("")))
-	http.Handle("/images/", http.FileServer(http.Dir("")))
+	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}
+	http.Handle("/css/", http.FileServer(http.Dir(StaticPath)))
+	http.Handle("/js/", http.FileServer(http.Dir(StaticPath)))
+	http.Handle("/images/", http.FileServer(http.Dir(StaticPath)))
 	err := conn.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
@@ -51,7 +54,7 @@ func AutoRouter(prefix string, c ControllerInterface) {
 	ct := reflect.Indirect(reflectVal).Type()
 	controllerName := strings.TrimSuffix(ct.Name(), "Controller")
 	for i := 0; i < rt.NumMethod(); i++ {
-		if !util.InSlice(rt.Method(i).Name, exceptMethod) {
+		if !utils.InSlice(rt.Method(i).Name, exceptMethod) {
 			pattern := path.Join(prefix, strings.ToLower(controllerName), strings.ToLower(rt.Method(i).Name))
 			Router(pattern, c, rt.Method(i).Name)
 		}
