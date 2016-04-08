@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 	"reflect"
+	"strconv"
 	aolog "github.com/artwebs/aogo/log"
 )
 
@@ -88,7 +89,7 @@ func (this *Model)addWhere(sql string,args []interface{}) (string,[]interface{})
 }
 
 func (this *Model)addOrder(sql string) string {
-	if this.order !=nil && !strings.Contains(strings.ToLower(sql), " order by "){
+	if this.order !="" && !strings.Contains(strings.ToLower(sql), " order by "){
 		sql += " order by "+ this.order
 	}
 	return sql
@@ -122,18 +123,20 @@ func (this *Model)initSelect()string {
 	}else {
 		sql += "*"
 	}
-	sql += "from "+this.getTabName()
+	sql += " from "+this.getTabName()
 	return sql
 }
 
-func (this *Model) Query(s string,args ...interface{}) ([]map[string]interface{} ,error) {
+func (this *Model) Query(s string,args ...interface{}) ([]map[string]string ,error) {
 	this.Conn()
 	defer this.Close()
 	return this.QueryNoConn(s, args...)
 }
 
-func (this *Model) QueryNoConn(s string,args ...interface{}) ([]map[string]interface{} ,error){
-	result :=[]map[string]interface{}{}
+func (this *Model) QueryNoConn(s string,args ...interface{}) ([]map[string]string ,error){
+	defer this.Reset()
+	result :=[]map[string]string{}
+	aolog.Info(s,args)
 	rows ,err :=  this.db.Query(s, args...)
 	if err !=nil{
 		return result,err
@@ -152,7 +155,7 @@ func (this *Model) QueryNoConn(s string,args ...interface{}) ([]map[string]inter
         if err != nil {
             return result,err
         }
- 		row := map[string]interface{}{}
+ 		row := map[string]string{}
         for i, col := range values {
         	if col ==nil{
         		row[columns[i]] = "NULL"
@@ -165,15 +168,16 @@ func (this *Model) QueryNoConn(s string,args ...interface{}) ([]map[string]inter
     return result,nil
 }
 
-func (this *Model)QueryRow(s string,args ...interface{})(map[string]interface{} ,error) {
+func (this *Model)QueryRow(s string,args ...interface{})(map[string]string ,error) {
 	this.Conn()
 	defer this.Close()
 	return this.QueryRowNoConn(s, args...)
 }
 
-func (this *Model)QueryRowNoConn(s string,args ...interface{})(map[string]interface{} ,error) {
+func (this *Model)QueryRowNoConn(s string,args ...interface{})(map[string]string ,error) {
+	defer this.Reset()
 	this.limit = "0,1"
-	var result map[string]interface{}
+	var result map[string]string
 	s =  this.addLimit(s)
 	rows , err := this.QueryNoConn(s, args...)
 	if err !=nil{
@@ -182,7 +186,7 @@ func (this *Model)QueryRowNoConn(s string,args ...interface{})(map[string]interf
 	if len(rows)>0{
 		result = rows[0]
 	}else{
-		result = map[string]interface{}{}
+		result = map[string]string{}
 	}
 	return result , nil
 
@@ -195,8 +199,8 @@ func (this *Model) Exec(sql string,args ...interface{})(sql.Result,error) {
 }
 
 func (this *Model) ExecNoConn(sql string,args ...interface{})(sql.Result,error) {
-	aolog.InfoTag(this,sql)
-	aolog.Info(args)
+	defer this.Reset()
+	aolog.InfoTag(this,sql,args)
 	stmt,err := this.db.Prepare(sql)
 	if err !=nil{
 		return nil,err
@@ -230,7 +234,6 @@ func (this *Model) Insert(values map[string]interface{}) (int64,error) {
 func (this *Model) Update(values map[string]interface{})(int64,error) {
 	this.Conn()
 	defer this.Close()
-	defer this.Reset()
 	u := ""
 	val :=[]interface{}{}
 	for k,v :=range values{
@@ -252,7 +255,6 @@ func (this *Model) Update(values map[string]interface{})(int64,error) {
 func (this *Model) Delete()(int64,error) {
 	this.Conn()
 	defer this.Close()
-	defer this.Reset()
 	val :=[]interface{}{}
 	sql := "delete from "+this.getTabName()
 	sql ,val =this.addWhere(sql, val)
@@ -264,41 +266,41 @@ func (this *Model) Delete()(int64,error) {
 }
 
 
-func (this *Model) Find()([]map[string]interface{},error) {
+func (this *Model) Find()(map[string]string,error) {
 	this.Conn()
 	defer this.Close()
-	defer this.Reset()
+	var args []interface{}
 	sql := this.initSelect()
-	sql =  this.addWhere(sql,[]interface{}{})
-	return this.QueryRowNoConn(sql)
+	sql,args =  this.addWhere(sql,[]interface{}{})
+	return this.QueryRowNoConn(sql,args...)
 
 }
 
-func (this *Model) Total() (int,err) {
+func (this *Model) Total() (int,error) {
 	this.Conn()
 	defer this.Close()
-	defer this.Reset()
+	var args []interface{}
 	this.Field("count(*) as c")
 	sql := this.initSelect()
-	sql = this.addWhere(sql, []interface{}{})
-	row , err := this.QueryRowNoConn(sql)
+	sql,args = this.addWhere(sql, []interface{}{})
+	row , err := this.QueryRowNoConn(sql,args...)
 	if err != nil{
 		return 0,nil
 	}
-	return int(row["c"]),nil
+	return strconv.Atoi(string(row["c"]))
 }
 
-func (this *Model) Select()([]map[string]interface{},error) {
+func (this *Model) Select()([]map[string]string,error) {
 	this.Conn()
 	defer this.Close()
-	defer this.Reset()
+	var args []interface{}
 	sql := this.initSelect()
-	sql = this.addWhere(sql, []interface{}{})
+	sql,args= this.addWhere(sql, []interface{}{})
 	sql = this.addOrder(sql)
 	sql = this.addLimit(sql)
 	sql = this.addGroup(sql)
 	sql = this.addHaving(sql)
-	return this.QueryNoConn(sql)
+	return this.QueryNoConn(sql,args...)
 
 }
 
