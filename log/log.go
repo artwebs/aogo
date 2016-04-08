@@ -2,7 +2,7 @@ package log
 
 import (
 	"strings"
-
+	"github.com/artwebs/aogo/utils"
 	"github.com/astaxie/beego/logs"
 )
 
@@ -73,9 +73,24 @@ func Warn(v ...interface{}) {
 	BeeLogger.Warn(generateFmtStr(len(v)), v...)
 }
 
+func WarnTag(v ...interface{}) {
+	if len(v)>1 {
+		v[0] = utils.Tag(v[0])+"=>"
+	}
+	Warn(v...)
+}
+
 func Notice(v ...interface{}) {
 	BeeLogger.Notice(generateFmtStr(len(v)), v...)
 }
+
+func NoticeTag(v ...interface{}) {
+	if len(v)>1 {
+		v[0] = utils.Tag(v[0])+"=>"
+	}
+	Notice(v...)
+}
+
 
 // Info logs a message at info level.
 func Informational(v ...interface{}) {
@@ -87,9 +102,23 @@ func Info(v ...interface{}) {
 	BeeLogger.Info(generateFmtStr(len(v)), v...)
 }
 
+func InfoTag(v ...interface{}) {
+	if len(v)>1 {
+		v[0] = utils.Tag(v[0])+"=>"
+	}
+	Info(v...)
+}
+
 // Debug logs a message at debug level.
 func Debug(v ...interface{}) {
 	BeeLogger.Debug(generateFmtStr(len(v)), v...)
+}
+
+func DebugTag(v ...interface{}) {
+	if len(v)>1 {
+		v[0] = utils.Tag(v[0])+"=>"
+	}
+	Debug(v...)
 }
 
 // Trace logs a message at trace level.
@@ -101,3 +130,4 @@ func Trace(v ...interface{}) {
 func generateFmtStr(n int) string {
 	return strings.Repeat("%v ", n)
 }
+

@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"reflect"
 )
 
 const (
@@ -209,4 +210,8 @@ func MachineId() []byte {
 
 func Hex(b []byte) string {
 	return hex.EncodeToString(b)
+}
+
+func Tag(obj interface{})string{
+	return reflect.Indirect(reflect.ValueOf(obj)).Type().Name()
 }
