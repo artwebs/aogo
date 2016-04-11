@@ -4,6 +4,7 @@ import (
 	aolog "github.com/artwebs/aogo/log"
 	"github.com/artwebs/aogo/web"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 func webRun() {
@@ -29,15 +30,17 @@ type TestController struct {
 func (this *TestController) Index() {
 	// model := web.D(new(TestModel))
 	model := &UserModel{}
+	model.DBPrifix = "PG"
+	// model := NewPgUser()
 	web.D(model)
 	// aolog.Info(model.Insert(map[string]interface{}{"name":"test"}))
-	// aolog.Info(model.Where("id=?",1).Update(map[string]interface{}{"name":"test1"}))
+	aolog.Info(model.Where("id=?", 1).Update(map[string]interface{}{"name": "test1"}))
 	// aolog.Info(model.Where("id=?",16).Delete())
 	// aolog.Info(model.Query("select * from user"))
 	// aolog.Info(model.Where("id=?",1).Find())
 	// aolog.Info(model.Total())
 	// aolog.Info(model.Where("id=?",1).Total())
-	aolog.Info(model.Order("id desc").Select())
+	// aolog.Info(model.Order("id desc").Select())
 	if user, ok := this.Form["user"]; ok {
 		this.SetSession("user", user)
 	}
@@ -73,17 +76,12 @@ func (this *TestController) Save() {
 	}
 }
 
-type UserModel struct{
+type UserModel struct {
+	// web.Model
 	web.Model
 }
 
-func (this *UserModel)DoTest() {
+func (this *UserModel) DoTest() {
 	aolog.Info("DoTest")
-	
+
 }
-
-
-
-
-
-

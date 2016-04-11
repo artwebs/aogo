@@ -35,7 +35,6 @@ type Model struct {
 	limit,order,group,having string
 }
 
-
 func (this *Model)SetTabName(name string) {
 	this.TabName =name
 }
@@ -68,7 +67,7 @@ func (this *Model) Close() {
 }
 
 func (this *Model)getTabName() string {
-	return strings.ToLower(this.TabName)
+	return this.TabPrifix+strings.ToLower(this.TabName)
 }
 
 func (this *Model)Reset() {
