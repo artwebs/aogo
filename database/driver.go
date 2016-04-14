@@ -43,7 +43,9 @@ type Driver struct {
 }
 
 type DriverInterface interface {
-	Init(DriverName, DataSourceName, TabPrifix string, c *cache.Cache)
+	Init(DriverName, DataSourceName, TabPrifix string)
+	SetDBPrifix(p string) 
+	SetCache(c *cache.Cache)
 	Conn()
 	Close()
 	SetTabName(name string)
@@ -72,11 +74,18 @@ func (this *Driver) SetTabName(name string) {
 	this.TabName = name
 }
 
-func (this *Driver) Init(DriverName, DataSourceName, TabPrifix string, c *cache.Cache) {
+func (this *Driver) SetCache(c *cache.Cache) {
+	this.CacheObj = c
+}
+
+func (this *Driver) SetDBPrifix(p string) {
+	this.DBPrifix = p
+}
+
+func (this *Driver) Init(DriverName, DataSourceName, TabPrifix string) {
 	this.DriverName = DriverName
 	this.DataSourceName = DataSourceName
 	this.TabPrifix = TabPrifix
-	this.CacheObj = c
 }
 
 func (this *Driver) Conn() {
@@ -381,7 +390,7 @@ func (this *Driver) Field(fields ...string) DriverInterface {
 
 func (this *Driver) getCacheName(s string, args ...interface{}) string {
 	jbyte, _ := json.Marshal(args)
-	return base64.StdEncoding.EncodeToString([]byte(s + string(jbyte)))
+	return base64.StdEncoding.EncodeToString([]byte(this.DBPrifix +" DataBase "+s + string(jbyte)))
 }
 
 func (this *Driver) ClearCache(args ...string) {

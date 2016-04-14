@@ -55,8 +55,9 @@ func (this *Model) Init(args ...string) {
 		Cobj, err = cache.NewCache(CobjName, CobjConfig)
 	}
 	this.Drv = database.Drivers(driverName)
-	this.Drv.Init(driverName, dataSourceName, tabPrifix, Cobj)
-
+	this.Drv.Init(driverName, dataSourceName, tabPrifix)
+	this.Drv.SetCache(Cobj)
+	this.Drv.SetDBPrifix(dbPrifix)
 }
 
 func (this *Model) Query(s string, args ...interface{}) ([]map[string]string, error) {
