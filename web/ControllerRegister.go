@@ -6,14 +6,16 @@ import (
 	"reflect"
 	// "regexp"
 	"strings"
+	"github.com/artwebs/aogo/log"
 )
 
 type ControllerRegistor struct {
 	routes map[string]*Handler
+	namespaces []string
 }
 
 func NewControllerRegistor() *ControllerRegistor {
-	return &ControllerRegistor{routes: make(map[string]*Handler)}
+	return &ControllerRegistor{routes: make(map[string]*Handler),namespaces:[]string{""}}
 }
 
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -53,5 +55,6 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		}
 
 	}
+	log.ErrorTag(this,url + " do not find")
 
 }

@@ -71,6 +71,7 @@ func (this *Controller) WillDid() bool {
 func (this *Controller) SetUrl(arr []string) {
 	this.Data["url"] = strings.Join(arr[:len(arr)-1], "/")
 	this.Data["nspace"] = strings.Join(arr[:len(arr)-2], "/")
+	this.Data["res"] = this.Data["nspace"]
 }
 
 func (this *Controller) Redirect(url string) {
@@ -94,14 +95,23 @@ func (this *Controller) WriteJson(data interface{}) {
 
 func (this *Controller) Display(args ...string) {
 	tpl := ""
-	if len(args) == 0 {
-		tpl = ViewsPath + "/" + this.Ctl + "/" + this.Fun + "." + TemplateExt
-	} else if len(args) == 1 {
-		tpl = ViewsPath + "/" + this.Ctl + "/" + args[0] + "." + TemplateExt
-	} else {
-		tpl = ViewsPath + "/" + args[1] + "/" + args[0] + "." + TemplateExt
+	root := ViewsPath
+	if v , ok := this.Data["nspace"] ; ok {
+		root += v.(string)
 	}
-	log.Println(tpl)
+	if len(args) == 0 {
+		tpl = root + "/" + this.Ctl + "/" + this.Fun + "." + TemplateExt
+	} else if len(args) == 1 {
+		tpl = root + "/" + this.Ctl + "/" + args[0] + "." + TemplateExt
+	} else {
+		tpl = root + "/" + args[1] + "/" + args[0] + "." + TemplateExt
+	}
+	aolog.InfoTag(this,tpl)
+	if _,err  :=os.Stat(tpl);err !=nil{
+		aolog.ErrorTag(this,"file "+tpl + " do not exist")
+		return 
+	}
+
 	t, err := template.ParseFiles(tpl)
 	if err != nil {
 		log.Println(err)

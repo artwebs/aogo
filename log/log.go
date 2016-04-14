@@ -63,6 +63,14 @@ func Error(v ...interface{}) {
 	BeeLogger.Error(generateFmtStr(len(v)), v...)
 }
 
+// Error logs a message at error level.
+func ErrorTag(v ...interface{}) {
+	if len(v)>1 {
+		v[0] = utils.Tag(v[0])+"=>"
+	}
+	BeeLogger.Error(generateFmtStr(len(v)), v...)
+}
+
 // Warning logs a message at warning level.
 func Warning(v ...interface{}) {
 	BeeLogger.Warning(generateFmtStr(len(v)), v...)
