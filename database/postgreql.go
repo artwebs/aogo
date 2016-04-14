@@ -2,11 +2,15 @@ package database
 
 import (
 	"database/sql"
-	aolog "github.com/artwebs/aogo/log"
+	// aolog "github.com/artwebs/aogo/log"
 	_ "github.com/lib/pq"
 	"strconv"
 	"strings"
 )
+
+func init() {
+	Register("postgres", &Postgresql{})
+}
 
 type Postgresql struct {
 	Driver
@@ -21,7 +25,6 @@ func (this *Postgresql) ExecNoConn(s string, args ...interface{}) (sql.Result, e
 }
 
 func (this *Postgresql) toSql(s string, args ...interface{}) string {
-	aolog.InfoTag(this, args)
 	for i := 0; i < len(args); i++ {
 		s = strings.Replace(s, "?", "$"+strconv.Itoa(i+1), 1)
 	}

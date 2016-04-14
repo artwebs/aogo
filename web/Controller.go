@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	aolog "github.com/artwebs/aogo/log"
 	"html/template"
 	"io"
 	"log"
@@ -12,7 +13,7 @@ import (
 )
 
 type Controller struct {
-	ctl, fun string
+	Ctl, Fun string
 	w        http.ResponseWriter
 	r        *http.Request
 	Form     map[string]interface{}
@@ -22,6 +23,7 @@ type Controller struct {
 
 type ControllerInterface interface {
 	Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string)
+	WillDid() bool
 	SetUrl(arr []string)
 	Redirect(url string)
 	WriteString(str string)
@@ -34,8 +36,8 @@ type ControllerInterface interface {
 }
 
 func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string) {
-	this.ctl = strings.TrimSuffix(reflect.Indirect(reflect.ValueOf(ctl)).Type().Name(), "Controller")
-	this.fun = fun
+	this.Ctl = strings.TrimSuffix(reflect.Indirect(reflect.ValueOf(ctl)).Type().Name(), "Controller")
+	this.Fun = fun
 	this.w = w
 	this.r = r
 	this.Data = make(map[string]interface{})
@@ -58,8 +60,12 @@ func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl Control
 			this.Form[k] = v
 		}
 	}
+	aolog.DebugTag(this, "Form ", this.Form)
 
-	log.Println(this.Form)
+}
+
+func (this *Controller) WillDid() bool {
+	return true
 }
 
 func (this *Controller) SetUrl(arr []string) {
@@ -89,9 +95,9 @@ func (this *Controller) WriteJson(data interface{}) {
 func (this *Controller) Display(args ...string) {
 	tpl := ""
 	if len(args) == 0 {
-		tpl = ViewsPath + "/" + this.ctl + "/" + this.fun + "." + TemplateExt
+		tpl = ViewsPath + "/" + this.Ctl + "/" + this.Fun + "." + TemplateExt
 	} else if len(args) == 1 {
-		tpl = ViewsPath + "/" + this.ctl + "/" + args[0] + "." + TemplateExt
+		tpl = ViewsPath + "/" + this.Ctl + "/" + args[0] + "." + TemplateExt
 	} else {
 		tpl = ViewsPath + "/" + args[1] + "/" + args[0] + "." + TemplateExt
 	}

@@ -36,11 +36,13 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 			reflectVal := reflect.ValueOf(handler.controller)
 			data := urlarr[len(keyarr):]
 			handler.controller.Init(w, r, handler.controller, handler.method, data)
-			handler.controller.SetUrl(keyarr)
-			if val := reflectVal.MethodByName(handler.method); val.IsValid() {
-				val.Call([]reflect.Value{})
-			} else {
-				panic("'' method doesn't exist in the controller " + handler.method)
+			if handler.controller.WillDid() {
+				handler.controller.SetUrl(keyarr)
+				if val := reflectVal.MethodByName(handler.method); val.IsValid() {
+					val.Call([]reflect.Value{})
+				} else {
+					panic("'' method doesn't exist in the controller " + handler.method)
+				}
 			}
 			handler.controller.Release()
 			return

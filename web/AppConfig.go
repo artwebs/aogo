@@ -16,7 +16,7 @@ var (
 )
 
 type AppConfig struct {
-	obj config.ConfigContainer
+	obj config.Configer
 }
 
 func InitAppConfig() (*AppConfig, error) {
