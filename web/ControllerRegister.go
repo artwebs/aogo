@@ -20,6 +20,11 @@ func NewControllerRegistor() *ControllerRegistor {
 
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.String()
+	if url == "/"{
+		url = "/index"
+		http.Redirect(w, r, "/index", http.StatusFound)
+		return 
+	}
 	for key, handler := range this.routes {
 		keyarr := strings.Split(key, "/")
 		urlarr := strings.Split(strings.Split(url, "?")[0], "/")

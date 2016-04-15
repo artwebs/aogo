@@ -18,6 +18,7 @@ type Controller struct {
 	r        *http.Request
 	Form     map[string]interface{}
 	Data     map[string]interface{}
+	UrlKey,UrlVal 	 []string
 	session  *Session
 }
 
@@ -42,6 +43,7 @@ func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl Control
 	this.r = r
 	this.Data = make(map[string]interface{})
 	this.Form = make(map[string]interface{})
+	this.UrlVal = data[:]
 	if len(data)%2 == 0 {
 		index := 0
 		for {
@@ -69,6 +71,7 @@ func (this *Controller) WillDid() bool {
 }
 
 func (this *Controller) SetUrl(arr []string) {
+	this.UrlKey = arr[:]
 	this.Data["url"] = strings.Join(arr[:len(arr)-1], "/")
 	this.Data["nspace"] = strings.Join(arr[:len(arr)-2], "/")
 	this.Data["res"] = this.Data["nspace"]
