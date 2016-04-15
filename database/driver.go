@@ -9,6 +9,7 @@ import (
 	"time"
 	// "reflect"
 	"github.com/artwebs/aogo/cache"
+	"github.com/artwebs/aogo/utils"
 	aolog "github.com/artwebs/aogo/log"
 	"strconv"
 )
@@ -104,7 +105,7 @@ func (this *Driver) Close() {
 }
 
 func (this *Driver) getTabName() string {
-	return this.TabPrifix + strings.ToLower(this.TabName)
+	return this.TabPrifix + utils.StrUpperUnderline(this.TabName)
 }
 
 func (this *Driver) Reset() {

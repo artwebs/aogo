@@ -215,3 +215,8 @@ func Hex(b []byte) string {
 func Tag(obj interface{})string{
 	return reflect.Indirect(reflect.ValueOf(obj)).Type().Name()
 }
+
+func StrUpperUnderline(s string) string{
+	reg := regexp.MustCompile(`([A-Z])`)
+	return strings.TrimPrefix(strings.ToLower(reg.ReplaceAllString(s, "_"+"$1")), "_")
+}
