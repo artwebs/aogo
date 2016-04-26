@@ -76,7 +76,7 @@ func AddNamespace(nl ...*Namespace) {
 		for k, v := range n.handlers.routes {
 			register.routes[k] = v
 			if !utils.InSlice(n.prefix, register.namespaces) {
-				register.namespaces = append(register.namespaces,n.prefix)
+				register.namespaces = append(register.namespaces, n.prefix)
 			}
 		}
 	}

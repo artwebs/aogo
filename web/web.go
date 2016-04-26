@@ -35,7 +35,7 @@ func Run() {
 	aolog.Info(register.routes)
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}
 	aolog.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
-	for _,item := range register.namespaces{
+	for _, item := range register.namespaces {
 		http.Handle(item+"/css/", http.FileServer(http.Dir(ViewsPath)))
 		http.Handle(item+"/js/", http.FileServer(http.Dir(ViewsPath)))
 		http.Handle(item+"/images/", http.FileServer(http.Dir(ViewsPath)))

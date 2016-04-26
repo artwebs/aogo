@@ -41,12 +41,14 @@ type Driver struct {
 	where                       string
 	whereArgs                   []interface{}
 	limit, order, group, having string
+	isCache bool
 }
 
 type DriverInterface interface {
 	Init(DriverName, DataSourceName, TabPrifix string)
 	SetDBPrifix(p string) 
 	SetCache(c *cache.Cache)
+	IsCache(flag bool)
 	Conn()
 	Close()
 	SetTabName(name string)
@@ -79,6 +81,10 @@ func (this *Driver) SetCache(c *cache.Cache) {
 	this.CacheObj = c
 }
 
+func (this *Driver) IsCache(flag bool) {
+	this.isCache = flag
+}
+
 func (this *Driver) SetDBPrifix(p string) {
 	this.DBPrifix = p
 }
@@ -87,6 +93,7 @@ func (this *Driver) Init(DriverName, DataSourceName, TabPrifix string) {
 	this.DriverName = DriverName
 	this.DataSourceName = DataSourceName
 	this.TabPrifix = TabPrifix
+	this.isCache = true
 }
 
 func (this *Driver) Conn() {
@@ -115,6 +122,7 @@ func (this *Driver) Reset() {
 	this.having = ""
 	this.order = ""
 	this.group = ""
+	this.isCache = true
 }
 
 func (this *Driver) addWhere(sql string, args []interface{}) (string, []interface{}) {
@@ -173,7 +181,7 @@ func (this *Driver) Query(s string, args ...interface{}) ([]map[string]string, e
 func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
 	defer this.Reset()
 	cacheKey := this.getCacheName(s, args...)
-	if this.CacheObj != nil && this.CacheObj.IsExist(cacheKey) {
+	if this.CacheObj != nil && this.CacheObj.IsExist(cacheKey) && this.isCache{
 		aolog.InfoTag(this, " get "+cacheKey)
 		result := []map[string]string{}
 		rbyte, err := base64.StdEncoding.DecodeString(this.CacheObj.GetString(cacheKey))
@@ -212,7 +220,7 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 		}
 		result = append(result, row)
 	}
-	if this.CacheObj != nil {
+	if this.CacheObj != nil && this.isCache{
 		aolog.InfoTag(this, " save "+cacheKey)
 		rbyte, err := json.Marshal(result)
 		if err == nil {

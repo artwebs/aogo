@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/artwebs/aogo/web"
-	"github.com/artwebs/aogo/log"
-	"os"
-	"io/ioutil"
 	"encoding/json"
+	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/web"
+	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -17,34 +17,33 @@ var (
 func main() {
 	sessions = make(map[string]*Session)
 	routers = make(map[string]*Router)
-	sstr :=readSimple("session.json")
-	if sstr != ""{
+	sstr := readSimple("session.json")
+	if sstr != "" {
 		json.Unmarshal([]byte(sstr), &sessions)
 	}
-	log.Info("session",sessions)
-	sstr =readSimple("router.json")
-	if sstr != ""{
+	log.Info("session", sessions)
+	sstr = readSimple("router.json")
+	if sstr != "" {
 		json.Unmarshal([]byte(sstr), &routers)
 	}
-	log.Info("router",routers)
+	log.Info("router", routers)
 	web.Router("/index", &IndexController{}, "Index")
 	web.Run()
 }
 
-type IndexController struct{
+type IndexController struct {
 	web.Controller
 }
 
 func (this *IndexController) Index() {
 	router := strings.Join(this.UrlKey, "/")
-	log.InfoTag(this,router)
-	if val , ok :=routers[router]; ok{
-		log.InfoTag(this,val)
+	log.InfoTag(this, router)
+	if val, ok := routers[router]; ok {
+		log.InfoTag(this, val)
 	}
-	log.InfoTag(this,this.UrlKey)
+	log.InfoTag(this, this.UrlKey)
 	this.WriteString("")
 }
-
 
 // {
 // 	"session":{
@@ -63,26 +62,22 @@ func (this *IndexController) Index() {
 // 	}
 // }
 
-type Session struct{
-	Name,Fail string
+type Session struct {
+	Name, Fail string
 }
 
-type Router struct{
-	Tpl,Session string
-	Data map[string]string 
+type Router struct {
+	Tpl, Session string
+	Data         map[string]string
 }
 
-func readSimple(path string)string {  
-    fi,err := os.Open(path)  
-    if err != nil {
-    	return ""
-    }  
-    defer fi.Close()  
-    fd,err := ioutil.ReadAll(fi)  
-    // fmt.Println(string(fd))  
-    return string(fd)  
-}  
-
-
-
-
+func readSimple(path string) string {
+	fi, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer fi.Close()
+	fd, err := ioutil.ReadAll(fi)
+	// fmt.Println(string(fd))
+	return string(fd)
+}

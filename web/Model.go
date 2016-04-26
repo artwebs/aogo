@@ -140,3 +140,8 @@ func (this *Model) Field(fields ...string) *Model {
 	this.Drv.Field(fields...)
 	return this
 }
+
+func (this *Model) IsCache(flag bool) *Model {
+	this.Drv.IsCache(flag)
+	return this
+}

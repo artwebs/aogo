@@ -13,13 +13,13 @@ import (
 )
 
 type Controller struct {
-	Ctl, Fun string
-	w        http.ResponseWriter
-	r        *http.Request
-	Form     map[string]interface{}
-	Data     map[string]interface{}
-	UrlKey,UrlVal 	 []string
-	session  *Session
+	Ctl, Fun       string
+	w              http.ResponseWriter
+	r              *http.Request
+	Form           map[string]interface{}
+	Data           map[string]interface{}
+	UrlKey, UrlVal []string
+	session        *Session
 }
 
 type ControllerInterface interface {
@@ -99,7 +99,7 @@ func (this *Controller) WriteJson(data interface{}) {
 func (this *Controller) Display(args ...string) {
 	tpl := ""
 	root := ViewsPath
-	if v , ok := this.Data["nspace"] ; ok {
+	if v, ok := this.Data["nspace"]; ok {
 		root += v.(string)
 	}
 	if len(args) == 0 {
@@ -109,10 +109,10 @@ func (this *Controller) Display(args ...string) {
 	} else {
 		tpl = root + "/" + args[1] + "/" + args[0] + "." + TemplateExt
 	}
-	aolog.InfoTag(this,tpl)
-	if _,err  :=os.Stat(tpl);err !=nil{
-		aolog.ErrorTag(this,"file "+tpl + " do not exist")
-		return 
+	aolog.InfoTag(this, tpl)
+	if _, err := os.Stat(tpl); err != nil {
+		aolog.ErrorTag(this, "file "+tpl+" do not exist")
+		return
 	}
 
 	t, err := template.ParseFiles(tpl)
