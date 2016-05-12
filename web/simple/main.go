@@ -5,6 +5,9 @@ import (
 	"github.com/artwebs/aogo/log"
 	"github.com/artwebs/aogo/web"
 	"io/ioutil"
+	// "net/http"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -28,7 +31,14 @@ func main() {
 	}
 	log.Info("router", routers)
 	web.Router("/index", &IndexController{}, "Index")
+	web.HandleFunc("/test", HelloServer)
 	web.Run()
+
+	// http.Handle("/images/", http.FileServer(http.Dir("views")))
+	// http.ListenAndServe(":8080", nil)
+}
+func HelloServer(w http.ResponseWriter, req *http.Request) {
+	io.WriteString(w, "hello, world!\n")
 }
 
 type IndexController struct {
@@ -42,7 +52,7 @@ func (this *IndexController) Index() {
 		log.InfoTag(this, val)
 	}
 	log.InfoTag(this, this.UrlKey)
-	this.WriteString("")
+	this.WriteString("Index")
 }
 
 // {

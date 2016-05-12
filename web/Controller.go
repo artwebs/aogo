@@ -72,8 +72,13 @@ func (this *Controller) WillDid() bool {
 
 func (this *Controller) SetUrl(arr []string) {
 	this.UrlKey = arr[:]
-	this.Data["url"] = strings.Join(arr[:len(arr)-1], "/")
-	this.Data["nspace"] = strings.Join(arr[:len(arr)-2], "/")
+	if len(arr) < 2 {
+		this.Data["url"] = "/"
+		this.Data["nspace"] = "/"
+	} else {
+		this.Data["url"] = strings.Join(arr[:len(arr)-1], "/")
+		this.Data["nspace"] = strings.Join(arr[:len(arr)-2], "/")
+	}
 	this.Data["res"] = this.Data["nspace"]
 }
 

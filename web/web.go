@@ -32,14 +32,14 @@ func init() {
 }
 
 func Run() {
+	for _, item := range register.namespaces {
+		HandleFile(item+"/css", ViewsPath)
+		HandleFile(item+"/js", ViewsPath)
+		HandleFile(item+"/images", ViewsPath)
+	}
 	aolog.Info(register.routes)
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}
 	aolog.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
-	for _, item := range register.namespaces {
-		http.Handle(item+"/css/", http.FileServer(http.Dir(ViewsPath)))
-		http.Handle(item+"/js/", http.FileServer(http.Dir(ViewsPath)))
-		http.Handle(item+"/images/", http.FileServer(http.Dir(ViewsPath)))
-	}
 	err := conn.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
@@ -49,6 +49,18 @@ func Run() {
 
 func Router(pattern string, c ControllerInterface, method string) {
 	register.routes[pattern] = &Handler{controller: c, method: method}
+}
+
+func Handle(pattern string, handler http.Handler) {
+	register.routes[pattern] = handler
+}
+
+func HandleFile(pattern, root string) {
+	register.routes[pattern] = http.FileServer(http.Dir(root))
+}
+
+func HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	register.routes[pattern] = HandlerFunc(handler)
 }
 
 func AutoRouter(prefix string, c ControllerInterface) {
@@ -63,4 +75,15 @@ func AutoRouter(prefix string, c ControllerInterface) {
 		}
 
 	}
+}
+
+// The HandlerFunc type is an adapter to allow the use of
+// ordinary functions as HTTP handlers. If f is a function
+// with the appropriate signature, HandlerFunc(f) is a
+// Handler that calls f.
+type HandlerFunc func(http.ResponseWriter, *http.Request)
+
+// ServeHTTP calls f(w, r).
+func (f HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(w, r)
 }
