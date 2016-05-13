@@ -34,9 +34,9 @@ func main() {
 	web.HandleFunc("/test", HelloServer)
 	web.Run()
 
-	// http.Handle("/images/", http.FileServer(http.Dir("views")))
-	// http.ListenAndServe(":8080", nil)
 }
+
+
 func HelloServer(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "hello, world!\n")
 }
