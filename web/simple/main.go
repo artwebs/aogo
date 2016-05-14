@@ -2,9 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
+
 	"github.com/artwebs/aogo/log"
 	"github.com/artwebs/aogo/web"
-	"io/ioutil"
 	// "net/http"
 	"io"
 	"net/http"
@@ -35,7 +36,6 @@ func main() {
 	web.Run()
 
 }
-
 
 func HelloServer(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "hello, world!\n")
