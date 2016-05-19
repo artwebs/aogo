@@ -110,11 +110,15 @@ func (this *Controller) Display(args ...string) {
 		root += v.(string)
 	}
 	if len(args) == 0 {
-		tpl = root + "/" + this.Ctl + "/" + this.Fun + "." + TemplateExt
+		tpl = root + "/" + this.Ctl + "/" + this.Fun
 	} else if len(args) == 1 {
-		tpl = root + "/" + this.Ctl + "/" + args[0] + "." + TemplateExt
+		tpl = root + "/" + this.Ctl + "/" + args[0]
 	} else {
-		tpl = root + "/" + args[1] + "/" + args[0] + "." + TemplateExt
+		tpl = root + "/" + args[1] + "/" + args[0]
+	}
+
+	if !strings.HasSuffix(tpl, "."+TemplateExt) {
+		tpl += "." + TemplateExt
 	}
 	aolog.InfoTag(this, tpl)
 	if _, err := os.Stat(tpl); err != nil {

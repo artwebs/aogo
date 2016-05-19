@@ -49,10 +49,14 @@ func (this *IndexController) Index() {
 	router := strings.Join(this.UrlKey, "/")
 	log.InfoTag(this, router)
 	if val, ok := routers[router]; ok {
+		if val.Tpl != "" {
+			this.Display(val.Tpl)
+		}
 		log.InfoTag(this, val)
+	} else {
+		this.WriteString(router + " do not find!")
 	}
-	log.InfoTag(this, this.UrlKey)
-	this.WriteString("Index")
+
 }
 
 // {

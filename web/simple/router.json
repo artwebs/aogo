@@ -1,11 +1,11 @@
 {
 	"/index":{
-		"Tpl":"/index.html",
+		"Tpl":"index.html",
 		"Data":{"data1":"test1","data2":"test2"},
 		"Session":"session1:save"
 		},
 	"/index/test":{
-		"Tpl":"/test.html",
+		"Tpl":"test.html",
 		"Data":{"data1":"test1","data2":"test2"},
 		"Session":"session1"
 	}
