@@ -48,15 +48,38 @@ type IndexController struct {
 func (this *IndexController) Index() {
 	router := strings.Join(this.UrlKey, "/")
 	log.InfoTag(this, router)
+	model := &DefaultModel{}
+	web.D(model)
 	if val, ok := routers[router]; ok {
 		if val.Tpl != "" {
+			for key, value := range val.Data {
+				this.Data[key] = model.Aws(value, this.Form)
+			}
+			log.InfoTag(this, this.Data)
 			this.Display(val.Tpl)
+		} else {
+			this.WriteJson(this.Data)
 		}
-		log.InfoTag(this, val)
+
 	} else {
 		this.WriteString(router + " do not find!")
 	}
 
+}
+
+type DefaultModel struct {
+	web.Model
+}
+
+func (this *DefaultModel) Aws(name string, args map[string]interface{}) map[string]string {
+	data, _ := json.Marshal(args)
+	rsdata, err := this.Query("SELECT aws(?,?)", name, string(data))
+	if err != nil {
+		log.ErrorTag(this, err)
+		return make(map[string]string)
+	}
+	log.InfoTag(this, "Aws=>", rsdata)
+	return rsdata[0]
 }
 
 // {
