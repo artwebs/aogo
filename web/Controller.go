@@ -2,7 +2,6 @@ package web
 
 import (
 	"encoding/json"
-	aolog "github.com/artwebs/aogo/log"
 	"html/template"
 	"io"
 	"log"
@@ -10,6 +9,8 @@ import (
 	"os"
 	"reflect"
 	"strings"
+
+	aolog "github.com/artwebs/aogo/log"
 )
 
 type Controller struct {
@@ -54,7 +55,8 @@ func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl Control
 			index += 2
 		}
 	}
-
+	aolog.DebugTag(this, "r.Form ", r.Form)
+	r.ParseForm()
 	for k, v := range r.Form {
 		if len(v) > 0 {
 			this.Form[k] = v[0]

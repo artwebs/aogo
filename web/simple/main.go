@@ -31,7 +31,7 @@ func main() {
 		json.Unmarshal([]byte(sstr), &routers)
 	}
 	log.Info("router", routers)
-	web.Router("/index", &IndexController{}, "Index")
+	web.Router("/", &IndexController{}, "Index")
 	web.HandleFunc("/test", HelloServer)
 	web.Run()
 

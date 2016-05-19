@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"reflect"
 	// "regexp"
-	"github.com/artwebs/aogo/log"
 	"strings"
+
+	"github.com/artwebs/aogo/log"
 )
 
 type ControllerRegistor struct {
@@ -21,6 +22,10 @@ func NewControllerRegistor() *ControllerRegistor {
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.String()
 	log.InfoTag(this, url)
+	if url == "/favicon.ico" {
+		http.ServeFile(w, r, "./favicon.ico")
+		return
+	}
 	urlarr := strings.Split(strings.Split(url, "?")[0], "/")
 	for key, handler := range this.routes {
 		keyarr := strings.Split(key, "/")
@@ -47,7 +52,7 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 	}
 
 	if handler, ok := this.routes["/"]; ok {
-		keyarr := []string{}
+		keyarr := strings.Split(strings.Split(url, "?")[0], "/")
 		this.doController(keyarr, urlarr, handler, w, r)
 		log.InfoTag(this, "to /")
 		return
