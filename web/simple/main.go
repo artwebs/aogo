@@ -94,7 +94,20 @@ func (this *IndexController) Index() {
 		web.D(model)
 		if val.Data != nil {
 			for key, value := range val.Data {
-				this.Data[key] = model.Aws(value, this.Form)
+				switch value {
+				case "SaveFile":
+					file, err := this.SaveToFile("UpLoadFile", "")
+					if err == nil {
+						this.Data[key] = map[string]interface{}{"code": 1, "message": "上传成功", "result": file}
+					} else {
+						this.Data[key] = map[string]interface{}{"code": 0, "message": err, "result": ""}
+					}
+
+					break
+				default:
+					this.Data[key] = model.Aws(value, this.Form)
+				}
+
 			}
 		}
 		this.doSession(sinArr)

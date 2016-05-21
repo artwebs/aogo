@@ -34,7 +34,7 @@ type ControllerInterface interface {
 	SetSession(key, value interface{})
 	GetSession(key interface{}) interface{}
 	FlushSession()
-	SaveToFile(fromfile, tofile string) error
+	SaveToFile(fromfile, tofile string) (string, error)
 }
 
 func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string) {
@@ -173,13 +173,13 @@ func (this *Controller) FlushSession() {
 // SaveToFile saves uploaded file to new path.
 // it only operates the first one of mutil-upload form file field.
 // /data/[file].[ext]
-func (this *Controller) SaveToFile(fromfile, tofile string) error {
+func (this *Controller) SaveToFile(fromfile, tofile string) (string, error) {
 	if tofile == "" {
-		tofile = "[file].[ext]"
+		tofile = UploadPath + "/[file].[ext]"
 	}
 	file, handle, err := this.r.FormFile(fromfile)
 	if err != nil {
-		return err
+		return tofile, err
 	}
 	fileNameArr := strings.Split(handle.Filename, ".")
 	defer file.Close()
@@ -187,9 +187,9 @@ func (this *Controller) SaveToFile(fromfile, tofile string) error {
 	tofile = strings.Replace(tofile, "[ext]", fileNameArr[1], -1)
 	f, err := os.OpenFile(tofile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
-		return err
+		return tofile, err
 	}
 	defer f.Close()
 	io.Copy(f, file)
-	return nil
+	return tofile, nil
 }

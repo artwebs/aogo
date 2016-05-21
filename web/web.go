@@ -1,8 +1,6 @@
 package web
 
 import (
-	aolog "github.com/artwebs/aogo/log"
-	"github.com/artwebs/aogo/utils"
 	"log"
 	"net/http"
 	"path"
@@ -10,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/utils"
 )
 
 var (
@@ -36,6 +37,7 @@ func Run() {
 		HandleFile(item+"/css", ViewsPath)
 		HandleFile(item+"/js", ViewsPath)
 		HandleFile(item+"/images", ViewsPath)
+		HandleFile(item+"/"+UploadPath, "./")
 	}
 	aolog.Info(register.routes)
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}

@@ -2,8 +2,9 @@ package web
 
 import (
 	// "fmt"
-	"github.com/astaxie/beego/config"
 	"log"
+
+	"github.com/astaxie/beego/config"
 )
 
 var (
@@ -13,6 +14,7 @@ var (
 
 	ViewsPath   = "views"
 	TemplateExt = "html"
+	UploadPath  = "files"
 )
 
 type AppConfig struct {
@@ -34,6 +36,9 @@ func InitAppConfig() (*AppConfig, error) {
 
 		HttpAddress = conf.String("HttpAddress", "")
 		HttpPort = conf.Int("HttpPort", 8080)
+		ViewsPath = conf.String("ViewsPath", "views")
+		TemplateExt = conf.String("TemplateExt", "html")
+		UploadPath = conf.String("TemplateExt", "files")
 	}
 	return conf, nil
 
@@ -43,7 +48,11 @@ func (this *AppConfig) String(key, def string) string {
 	if this.obj == nil {
 		return def
 	}
-	return this.obj.String(key)
+	val := this.obj.String(key)
+	if val == "" {
+		return def
+	}
+	return val
 }
 
 func (this *AppConfig) Int(key string, def int) int {
