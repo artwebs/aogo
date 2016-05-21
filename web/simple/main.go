@@ -123,7 +123,6 @@ func (this *IndexController) doSession(s []string) {
 
 	switch s[1] {
 	case "save":
-
 		if val, ok := sessions[s[0]]; ok {
 			data := (this.Data[val.Name]).(map[string]interface{})
 			if (data["code"]).(float64) == 1 {

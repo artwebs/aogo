@@ -1,4 +1,3 @@
 {
-	"session1":{"name":"user","fail":"/Index/error"},
 	"user":{"name":"data","fail":"/Index/error"}
 }
