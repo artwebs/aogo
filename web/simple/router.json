@@ -1,12 +1,14 @@
 {
+	"/login":{
+		"Tpl":"login.html","Data":{"data":"user_login"},"Session":"user:save"
+		},
 	"/index":{
-		"Tpl":"index.html",
-		"Data":{"data1":"test1","data2":"test2"},
-		"Session":"session1:save"
+		"Tpl":"index.html","Data":{"data1":"test1","data2":"test2"},"Session":"session1:save"
 		},
 	"/index/test":{
-		"Tpl":"test.html",
-		"Data":{"data1":"test1","data2":"test2"},
-		"Session":"session1"
+		"Tpl":"test.html","Data":{"data":"dev_test"},"Session":"user"
+	},
+	"/index/error":{
+		"Tpl":"error.html"
 	}
 }
