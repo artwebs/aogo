@@ -1,0 +1,17 @@
+{
+	"login":{
+		"Data":{"data":"user_login"},"Session":"user:save"
+		},
+	"index":{
+		"Tpl":"index.html","Data":{"data1":"test1","data2":"test2"},"Session":"session1:save"
+		},
+	"test":{
+		"Tpl":"test.html","Data":{"data":"dev_test"},"Session":"user"
+	},
+	"data":{
+		"Data":{"data":"dev_test"},"Tpl":"json","Session":"user"
+	},
+	"error":{
+		"Tpl":"error.html"
+	}
+}
