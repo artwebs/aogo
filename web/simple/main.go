@@ -184,7 +184,7 @@ func (this *IndexController) verfiySession(sin string) bool {
 							this.Form[k] = v
 						}
 					}
-					return true
+					continue
 				}
 				this.Redirect(val.Fail)
 				return false
