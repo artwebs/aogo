@@ -71,15 +71,19 @@ type DefaultModel struct {
 	web.Model
 }
 
-func (this *DefaultModel) Aws(name string, args map[string]interface{}) map[string]string {
+func (this *DefaultModel) Aws(name string, args map[string]interface{}) map[string]interface{} {
 	data, _ := json.Marshal(args)
-	rsdata, err := this.Query("SELECT aws(?,?)", name, string(data))
+	var notused string
+	this.Drv.Conn()
+	err := this.Drv.Db().QueryRow("SELECT aws($1,$2)", name, string(data)).Scan(&notused)
+	defer this.Drv.Close()
 	if err != nil {
 		log.ErrorTag(this, err)
-		return make(map[string]string)
+		return make(map[string]interface{})
 	}
-	log.InfoTag(this, "Aws=>", rsdata)
-	return rsdata[0]
+	result := make(map[string]interface{})
+	json.Unmarshal([]byte(notused), &result)
+	return result
 }
 
 // {
