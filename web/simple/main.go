@@ -145,23 +145,6 @@ func (this *DefaultModel) Aws(name string, args map[string]interface{}) map[stri
 	return result
 }
 
-// {
-// 	"session":{
-// 		"session1":{"name":"user","fail":"/index/error"}
-// 		},
-// 	"router":{
-// 		"/index":{
-// 			"tpl":"/index.html",
-// 			"data":{"data1":"test1","data2":"test2"},
-// 			"session":"session1"
-// 			},
-// 		"/index/test:session1":{
-// 			"tpl":"/test.html",
-// 			"data":{"data1":"test1","data2":"test2"}
-// 		}
-// 	}
-// }
-
 type Session struct {
 	Name, Fail string
 }
