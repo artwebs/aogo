@@ -10,6 +10,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -34,12 +36,36 @@ func reload() {
 		json.Unmarshal([]byte(sstr), &sessions)
 	}
 	log.Info("session", sessions)
-	sstr = readSimple("router.json")
-	if sstr != "" {
-		json.Unmarshal([]byte(sstr), &routers)
-	}
+	reg, _ := regexp.Compile("^[^rw_]\\w.+\\.json$")
+	// 遍历目录
+	filepath.Walk("./router",
+		func(path string, f os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if f.IsDir() {
+				return nil
+			}
+			// 匹配目录
+			matched := reg.MatchString(f.Name())
+			if matched {
+				log.Info("reload", path)
+				sstr = readSimple(path)
+				temp := make(map[string]*Router)
+				if sstr != "" {
+					json.Unmarshal([]byte(sstr), &temp)
+					for k, v := range temp {
+						if strings.HasPrefix(k, "/") {
+							routers[k] = v
+						} else {
+							routers["/"+strings.TrimSuffix(f.Name(), ".json")+"/"+k] = v
+						}
+					}
+				}
+			}
+			return nil
+		})
 	log.Info("router", routers)
-
 }
 
 func GOReload(w http.ResponseWriter, req *http.Request) {
@@ -66,15 +92,21 @@ func (this *IndexController) Index() {
 		}
 		model := &DefaultModel{}
 		web.D(model)
-		if val.Tpl != "" {
+		if val.Data != nil {
 			for key, value := range val.Data {
 				this.Data[key] = model.Aws(value, this.Form)
 			}
-			this.doSession(sinArr)
-			log.InfoTag(this, this.Data)
-			this.Display(val.Tpl)
-		} else {
+		}
+		this.doSession(sinArr)
+		tpl := router
+		if val.Tpl != "" {
+			tpl = val.Tpl
+		}
+		this.Data["Requst"] = this.Form
+		if tpl == "json" {
 			this.WriteJson(this.Data)
+		} else {
+			this.Display(tpl)
 		}
 
 	} else {
@@ -115,7 +147,12 @@ func (this *IndexController) verfiySession(s []string) bool {
 				log.InfoTag(this, this.GetSession(s[0]))
 				cursession := (this.GetSession(s[0])).(map[string]interface{})
 				for k, v := range cursession {
-					this.Form[k] = v
+					if _, tok := this.Form[k]; tok {
+						this.Form["_"+k] = v
+					} else {
+
+						this.Form[k] = v
+					}
 				}
 			} else {
 				this.Redirect(val.Fail)
