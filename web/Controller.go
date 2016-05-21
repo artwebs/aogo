@@ -74,14 +74,7 @@ func (this *Controller) WillDid() bool {
 
 func (this *Controller) SetUrl(arr []string) {
 	this.UrlKey = arr[:]
-	if len(arr) < 2 {
-		this.Data["url"] = "/"
-		this.Data["nspace"] = "/"
-	} else {
-		this.Data["url"] = strings.Join(arr[:len(arr)-1], "/")
-		this.Data["nspace"] = strings.Join(arr[:len(arr)-2], "/")
-	}
-	this.Data["res"] = this.Data["nspace"]
+
 }
 
 func (this *Controller) Redirect(url string) {
@@ -112,7 +105,11 @@ func (this *Controller) Display(args ...string) {
 	if len(args) == 0 {
 		tpl = root + "/" + this.Ctl + "/" + this.Fun
 	} else if len(args) == 1 {
-		tpl = root + "/" + this.Ctl + "/" + args[0]
+		if strings.HasPrefix(args[0], "/") {
+			tpl = root + args[0]
+		} else {
+			tpl = root + "/" + this.Ctl + "/" + args[0]
+		}
 	} else {
 		tpl = root + "/" + args[1] + "/" + args[0]
 	}
@@ -130,6 +127,15 @@ func (this *Controller) Display(args ...string) {
 	if err != nil {
 		log.Println(err)
 	}
+
+	if len(this.UrlKey) < 2 {
+		this.Data["url"] = "/"
+		this.Data["nspace"] = "/"
+	} else {
+		this.Data["url"] = strings.Join(this.UrlKey[:len(this.UrlKey)-1], "/")
+		this.Data["nspace"] = strings.Join(this.UrlKey[:len(this.UrlKey)-2], "/")
+	}
+	this.Data["res"] = this.Data["nspace"]
 	t.Execute(this.w, this.Data)
 }
 
