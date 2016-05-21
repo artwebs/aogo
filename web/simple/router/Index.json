@@ -1,6 +1,6 @@
 {
 	"login":{
-		"Data":{"data":"user_login"},"Session":"user:save"
+		"Data":{"data":"user_login"},"Session":"code,user:save"
 		},
 	"test":{
 		"Tpl":"test.html","Data":{"data":"dev_test"},"Session":"user"
@@ -12,6 +12,9 @@
 	},
 	"saveFile":{
 		"Data":{"data":"SaveFile"}
+	},
+	"code":{
+		"Data":{"code":"VerfiyCode"}
 	},
 	"error":{
 		"Tpl":"error.html"

@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/artwebs/aogo/utils"
+
 	aolog "github.com/artwebs/aogo/log"
 )
 
@@ -30,6 +32,7 @@ type ControllerInterface interface {
 	Redirect(url string)
 	WriteString(str string)
 	WriteJson(obj interface{})
+	WriteImage(img *utils.Image)
 	Release()
 	SetSession(key, value interface{})
 	GetSession(key interface{}) interface{}
@@ -83,6 +86,11 @@ func (this *Controller) Redirect(url string) {
 
 func (this *Controller) WriteString(str string) {
 	this.w.Write([]byte(str))
+}
+
+func (this *Controller) WriteImage(img *utils.Image) {
+	this.w.Header().Set("Content-Type", "image/png")
+	img.WriteTo(this.w)
 }
 
 func (this *Controller) WriteJson(data interface{}) {

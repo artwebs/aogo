@@ -1,3 +1,4 @@
 {
-	"user":{"name":"data","fail":"/Index/error"}
+	"user":{"Name":"data","Fail":"/Index/error"},
+	"code":{"Verfiy":"qcode","Fail":"/Index/error"}
 }

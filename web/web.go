@@ -15,7 +15,7 @@ import (
 
 var (
 	register     *ControllerRegistor
-	exceptMethod = []string{"Init", "WillDid", "Redirect", "WriteString", "Display", "WriteJson", "Release", "SetSession", "GetSession", "FlushSession", "SaveToFile", "SetUrl"}
+	exceptMethod = []string{"Init", "WillDid", "Redirect", "WriteString", "WriteImage", "Display", "WriteJson", "Release", "SetSession", "GetSession", "FlushSession", "SaveToFile", "SetUrl"}
 )
 
 type Handler struct {

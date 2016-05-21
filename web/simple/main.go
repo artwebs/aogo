@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"strconv"
 
 	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/utils"
 	"github.com/artwebs/aogo/web"
 	// "net/http"
 	"io"
@@ -82,12 +84,7 @@ func (this *IndexController) Index() {
 	log.InfoTag(this, router)
 
 	if val, ok := routers[router]; ok {
-		sinArr := []string{}
-		if val.Session != "" {
-			sinArr = strings.Split(val.Session, ":")
-		}
-
-		if !this.verfiySession(sinArr) {
+		if !this.verfiySession(val.Session) {
 			return
 		}
 		model := &DefaultModel{}
@@ -96,7 +93,7 @@ func (this *IndexController) Index() {
 			for key, value := range val.Data {
 				switch value {
 				case "SaveFile":
-					file, err := this.SaveToFile("UpLoadFile", "")
+					file, err := this.SaveToFile("File", "")
 					if err == nil {
 						this.Data[key] = map[string]interface{}{"code": 1, "message": "上传成功", "result": file}
 					} else {
@@ -104,13 +101,25 @@ func (this *IndexController) Index() {
 					}
 
 					break
+				case "VerfiyCode":
+					d := make([]byte, 4)
+					s := utils.NewLen(4)
+					ss := ""
+					d = []byte(s)
+					for v := range d {
+						d[v] %= 10
+						ss += strconv.FormatInt(int64(d[v]), 32)
+					}
+					this.SetSession(key, ss)
+					this.WriteImage(utils.NewImage(d, 100, 40))
+					return
 				default:
 					this.Data[key] = model.Aws(value, this.Form)
 				}
 
 			}
 		}
-		this.doSession(sinArr)
+		this.doSession(val.Session)
 		tpl := router
 		if val.Tpl != "" {
 			tpl = val.Tpl
@@ -128,50 +137,61 @@ func (this *IndexController) Index() {
 
 }
 
-func (this *IndexController) doSession(s []string) {
-
-	if len(s) < 2 {
-		return
-	}
-
-	switch s[1] {
-	case "save":
-		if val, ok := sessions[s[0]]; ok {
-			data := (this.Data[val.Name]).(map[string]interface{})
-			if (data["code"]).(float64) == 1 {
-				log.InfoTag(this, "doSession save", data["result"])
-				this.SetSession(s[0], data["result"])
-			}
+func (this *IndexController) doSession(sin string) {
+	for _, ss := range strings.Split(sin, ",") {
+		s := strings.Split(ss, ":")
+		if len(s) < 2 {
+			continue
 		}
-		break
-	case "delete":
-		this.FlushSession()
-		break
-	default:
 
+		switch s[1] {
+		case "save":
+			if val, ok := sessions[s[0]]; ok {
+				data := (this.Data[val.Name]).(map[string]interface{})
+				if (data["code"]).(float64) == 1 {
+					log.InfoTag(this, "doSession save", data["result"])
+					this.SetSession(s[0], data["result"])
+				}
+			}
+			break
+		case "delete":
+			this.FlushSession()
+			break
+		default:
+
+		}
 	}
 }
 
-func (this *IndexController) verfiySession(s []string) bool {
-	if len(s) == 1 {
-		if val, ok := sessions[s[0]]; ok {
-			if this.GetSession(s[0]) != nil {
-				log.InfoTag(this, this.GetSession(s[0]))
-				cursession := (this.GetSession(s[0])).(map[string]interface{})
-				for k, v := range cursession {
-					if _, tok := this.Form[k]; tok {
-						this.Form["_"+k] = v
-					} else {
-
-						this.Form[k] = v
+func (this *IndexController) verfiySession(sin string) bool {
+	for _, ss := range strings.Split(sin, ",") {
+		s := strings.Split(ss, ":")
+		if len(s) == 1 {
+			if val, ok := sessions[s[0]]; ok {
+				if this.GetSession(s[0]) != nil {
+					log.InfoTag(this, this.GetSession(s[0]))
+					if val.Verfiy != "" {
+						if this.Form[val.Verfiy] != this.GetSession(s[0]) {
+							this.Redirect(val.Fail)
+							return false
+						}
 					}
+					cursession := (this.GetSession(s[0])).(map[string]interface{})
+					for k, v := range cursession {
+						if _, tok := this.Form[k]; tok {
+							this.Form["_"+k] = v
+						} else {
+							this.Form[k] = v
+						}
+					}
+					return true
 				}
-			} else {
 				this.Redirect(val.Fail)
 				return false
 			}
 		}
 	}
+
 	return true
 }
 
@@ -195,7 +215,7 @@ func (this *DefaultModel) Aws(name string, args map[string]interface{}) map[stri
 }
 
 type Session struct {
-	Name, Fail string
+	Name, Fail, Verfiy string
 }
 
 type Router struct {
