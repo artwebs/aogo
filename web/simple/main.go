@@ -174,6 +174,8 @@ func (this *IndexController) verfiySession(sin string) bool {
 						if this.Form[val.Verfiy] != this.GetSession(s[0]) {
 							this.Redirect(val.Fail)
 							return false
+						} else {
+							continue
 						}
 					}
 					cursession := (this.GetSession(s[0])).(map[string]interface{})
