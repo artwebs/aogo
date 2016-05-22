@@ -15,7 +15,7 @@ import (
 
 var (
 	register     *ControllerRegistor
-	exceptMethod = []string{"Init", "WillDid", "Redirect", "WriteString", "WriteImage", "Template", "Display", "WriteJson", "Release", "SetSession", "GetSession", "FlushSession", "SaveToFile", "SetUrl"}
+	exceptMethod = []string{"Init", "WillDid", "Redirect", "WriteString", "WriteImage", "Template", "Display", "WriteJson", "Release", "SetSession", "GetSession", "FlushSession", "SaveToFile", "ServeFile", "SetUrl"}
 )
 
 type Handler struct {
@@ -37,7 +37,6 @@ func Run() {
 		HandleFile(item+"/css", ViewsPath)
 		HandleFile(item+"/js", ViewsPath)
 		HandleFile(item+"/images", ViewsPath)
-		HandleFile(item+"/"+UploadPath, "./")
 	}
 	aolog.Info(register.routes)
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}

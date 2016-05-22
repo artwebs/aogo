@@ -38,6 +38,7 @@ type ControllerInterface interface {
 	GetSession(key interface{}) interface{}
 	FlushSession()
 	SaveToFile(fromfile, tofile string) (string, error)
+	ServeFile(file string)
 }
 
 func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string) {
@@ -205,4 +206,8 @@ func (this *Controller) SaveToFile(fromfile, tofile string) (string, error) {
 	defer f.Close()
 	io.Copy(f, file)
 	return tofile, nil
+}
+
+func (this *Controller) ServeFile(file string) {
+	http.ServeFile(this.w, this.r, file)
 }

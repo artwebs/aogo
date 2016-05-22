@@ -81,7 +81,7 @@ type IndexController struct {
 
 func (this *IndexController) Index() {
 	router := strings.Join(this.UrlKey, "/")
-	log.InfoTag(this, router)
+	log.InfoTag(this, "Index", router)
 
 	if val, ok := routers[router]; ok {
 		if !this.verfiySession(val.Session) {
@@ -112,6 +112,10 @@ func (this *IndexController) Index() {
 					}
 					this.SetSession(key, ss)
 					this.WriteImage(utils.NewImage(d, 100, 40))
+					return
+				case "DownloadFile":
+					log.InfoTag(this, "DownloadFile", strings.TrimPrefix(router, "/"))
+					this.ServeFile(strings.TrimPrefix(router, "/"))
 					return
 				default:
 					this.Data[key] = model.Aws(value, this.Form)

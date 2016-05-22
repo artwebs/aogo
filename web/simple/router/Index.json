@@ -4,6 +4,9 @@
 	"login":{
 		"Data":{"data":"user_login"},"Session":"code,user:save"
 		},
+	"login_out":{
+			"Data":{"data":"user_login"},"Session":"user:delete"
+			},
 	"test":{
 		"Tpl":"test.html","Data":{"data":"dev_test"},"Session":"user"
 	},
