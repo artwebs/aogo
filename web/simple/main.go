@@ -125,10 +125,10 @@ func (this *IndexController) Index() {
 			tpl = val.Tpl
 		}
 		this.Data["req"] = this.Form
-		if tpl == "json" {
-			this.WriteJson(this.Data)
-		} else {
+		if _, err := os.Stat(this.Template(tpl)); err == nil {
 			this.Display(tpl)
+		} else {
+			this.WriteJson(this.Data)
 		}
 
 	} else {

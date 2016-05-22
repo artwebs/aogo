@@ -104,7 +104,7 @@ func (this *Controller) WriteJson(data interface{}) {
 	this.w.Write(content)
 }
 
-func (this *Controller) Display(args ...string) {
+func (this *Controller) Template(args ...string) string {
 	tpl := ""
 	root := ViewsPath
 	if v, ok := this.Data["nspace"]; ok {
@@ -125,6 +125,11 @@ func (this *Controller) Display(args ...string) {
 	if !strings.HasSuffix(tpl, "."+TemplateExt) {
 		tpl += "." + TemplateExt
 	}
+	return tpl
+}
+
+func (this *Controller) Display(args ...string) {
+	tpl := this.Template(args...)
 	aolog.InfoTag(this, tpl)
 	if _, err := os.Stat(tpl); err != nil {
 		aolog.ErrorTag(this, "file "+tpl+" do not exist")
