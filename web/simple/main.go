@@ -124,7 +124,7 @@ func (this *IndexController) Index() {
 		if val.Tpl != "" {
 			tpl = val.Tpl
 		}
-		this.Data["Requst"] = this.Form
+		this.Data["req"] = this.Form
 		if tpl == "json" {
 			this.WriteJson(this.Data)
 		} else {
