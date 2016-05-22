@@ -1,4 +1,6 @@
 {
+	"index":{
+		},
 	"login":{
 		"Data":{"data":"user_login"},"Session":"code,user:save"
 		},
