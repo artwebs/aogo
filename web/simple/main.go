@@ -19,13 +19,11 @@ import (
 
 var (
 	sessions   map[string]*Session
-	routers    map[string]*Router
 	routerTree *web.RouterTree
 )
 
 func main() {
 	sessions = make(map[string]*Session)
-	routers = make(map[string]*Router)
 
 	reload()
 	web.Router("/", &IndexController{}, "Index")
