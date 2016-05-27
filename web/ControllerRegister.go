@@ -11,12 +11,12 @@ import (
 )
 
 type ControllerRegistor struct {
-	routes     map[string]interface{}
+	tree       *RouterTree
 	namespaces []string
 }
 
 func NewControllerRegistor() *ControllerRegistor {
-	return &ControllerRegistor{routes: make(map[string]interface{}), namespaces: []string{""}}
+	return &ControllerRegistor{tree: &RouterTree{}, namespaces: []string{""}}
 }
 
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -26,56 +26,25 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		http.ServeFile(w, r, "./favicon.ico")
 		return
 	}
+
 	urlarr := strings.Split(strings.Split(url, "?")[0], "/")
-	for key, handler := range this.routes {
-		keyarr := strings.Split(key, "/")
-		if len(keyarr) > len(urlarr) {
-			continue
-		}
-
-		for index := range keyarr {
-			if keyarr[index] != urlarr[index] {
-				goto next
-			}
-		}
-		goto success
-	success:
-		{
-			this.doController(keyarr, urlarr, handler, w, r)
-			return
-		}
-	next:
-		{
-			continue
-		}
-
-	}
-
-	if handler, ok := this.routes["/"]; ok {
-		keyarr := strings.Split(strings.Split(url, "?")[0], "/")
-		this.doController(keyarr, urlarr, handler, w, r)
-		log.InfoTag(this, "to /")
+	data, handler := this.tree.FindRouter(strings.Split(url, "?")[0])
+	if handler != nil {
+		this.doController(data, urlarr, handler, w, r)
 		return
-	} else {
-		if url == "/" {
-			url = "/index"
-			http.Redirect(w, r, "/index", http.StatusFound)
-			return
-		}
 	}
 
 	log.ErrorTag(this, url+" do not find")
 
 }
 
-func (this *ControllerRegistor) doController(keyarr, urlarr []string, h interface{}, w http.ResponseWriter, r *http.Request) {
+func (this *ControllerRegistor) doController(data, urlarr []string, h interface{}, w http.ResponseWriter, r *http.Request) {
 	switch handler := h.(type) {
 	case *Handler:
 		reflectVal := reflect.ValueOf(handler.controller)
-		data := urlarr[len(keyarr):]
 		handler.controller.Init(w, r, handler.controller, handler.method, data)
 		if handler.controller.WillDid() {
-			handler.controller.SetUrl(keyarr)
+			handler.controller.SetUrl(urlarr[:len(urlarr)-len(data)])
 			if val := reflectVal.MethodByName(handler.method); val.IsValid() {
 				val.Call([]reflect.Value{})
 			} else {

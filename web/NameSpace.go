@@ -1,10 +1,11 @@
 package web
 
 import (
-	"github.com/artwebs/aogo/utils"
 	"path"
 	"reflect"
 	"strings"
+
+	"github.com/artwebs/aogo/utils"
 )
 
 type Namespace struct {
@@ -33,7 +34,7 @@ func NSNamespace(prefix string, params ...innnerNamespace) innnerNamespace {
 }
 
 func (n *Namespace) Router(rootpath string, c ControllerInterface, method string) *Namespace {
-	n.handlers.routes[n.prefix+rootpath] = &Handler{controller: c, method: method}
+	n.handlers.tree.AddRouter(n.prefix+rootpath, &Handler{controller: c, method: method})
 	return n
 }
 
@@ -64,20 +65,22 @@ func NSAutoRouter(rootpath string, c ControllerInterface) innnerNamespace {
 
 func (n *Namespace) Namespace(ns ...*Namespace) *Namespace {
 	for _, ni := range ns {
-		for k, v := range ni.handlers.routes {
-			register.routes[n.prefix+k] = v
-		}
+		register.tree.AddTree(n.prefix, ni.handlers.tree)
+		// for k, v := range ni.handlers.routes {
+		// 	register.routes[n.prefix+k] = v
+		// }
 	}
 	return n
 }
 
 func AddNamespace(nl ...*Namespace) {
 	for _, n := range nl {
-		for k, v := range n.handlers.routes {
-			register.routes[k] = v
-			if !utils.InSlice(n.prefix, register.namespaces) {
-				register.namespaces = append(register.namespaces, n.prefix)
-			}
-		}
+		register.tree.AddTree(n.prefix, n.handlers.tree)
+		// for k, v := range n.handlers.routes {
+		// 	register.routes[k] = v
+		// 	if !utils.InSlice(n.prefix, register.namespaces) {
+		// 		register.namespaces = append(register.namespaces, n.prefix)
+		// 	}
+		// }
 	}
 }

@@ -38,7 +38,7 @@ func Run() {
 		HandleFile(item+"/js", ViewsPath)
 		HandleFile(item+"/images", ViewsPath)
 	}
-	aolog.Info(register.routes)
+	aolog.Info(register.tree)
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}
 	aolog.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
 	err := conn.ListenAndServe()
@@ -49,19 +49,19 @@ func Run() {
 }
 
 func Router(pattern string, c ControllerInterface, method string) {
-	register.routes[pattern] = &Handler{controller: c, method: method}
+	register.tree.AddRouter(pattern, &Handler{controller: c, method: method})
 }
 
 func Handle(pattern string, handler http.Handler) {
-	register.routes[pattern] = handler
+	register.tree.AddRouter(pattern, handler)
 }
 
 func HandleFile(pattern, root string) {
-	register.routes[pattern] = http.FileServer(http.Dir(root))
+	register.tree.AddRouter(pattern, http.FileServer(http.Dir(root)))
 }
 
 func HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	register.routes[pattern] = HandlerFunc(handler)
+	register.tree.AddRouter(pattern, HandlerFunc(handler))
 }
 
 func AutoRouter(prefix string, c ControllerInterface) {

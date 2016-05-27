@@ -11,6 +11,16 @@ func init() {
 }
 
 func TestAddRouter(t *testing.T) {
+	child := NewRouterTree()
+	child.AddRouter("/", "/manage")
+	child.AddRouter("/user/add", "/manage/user/add")
+	child.AddRouter("/user/del", "/manage/user/del")
+
+	child1 := NewRouterTree()
+	child1.AddRouter("/user/add", "/admin/dev/user/add")
+	child1.AddRouter("/user/del", "/admin/dev/user/del")
+	child1.AddRouter("/user/edit", "/admin/dev/user/edit")
+
 	root := NewRouterTree()
 	root.AddRouter("/", "/")
 	root.AddRouter("/index", "/index")
@@ -19,6 +29,8 @@ func TestAddRouter(t *testing.T) {
 	root.AddRouter("/admin/add", "/admin/add")
 	root.AddRouter("/admin/del", "/admin/del")
 	root.AddRouter("/admin/", "/admin")
+	root.AddTree("/manage", child)
+	root.AddTree("/admin/dev", child1)
 	printTree("/", root, t)
 
 	findTree("/admin/del", root, t)

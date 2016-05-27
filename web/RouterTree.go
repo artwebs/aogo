@@ -20,9 +20,34 @@ func (this *RouterTree) AddRouter(prefix string, obj interface{}) {
 	this.addSeq(parr, obj, this)
 }
 
+func (this *RouterTree) AddTree(prefix string, tree *RouterTree) {
+	parr := this.splitPath(prefix)
+	this.addTree(parr, tree, this)
+}
+
 func (this *RouterTree) FindRouter(url string) ([]string, interface{}) {
 
 	return this.findRouter(this.splitPath(url), this)
+}
+func (this *RouterTree) addTree(parr []string, sourceTree, targetTree *RouterTree) {
+	if len(parr) > 0 {
+		var child *RouterTree
+		for _, item := range targetTree.child {
+			if parr[0] == item.prefix {
+				child = item
+				break
+			}
+		}
+		if child == nil {
+			child = NewRouterTree()
+			child.prefix = parr[0]
+			targetTree.child = append(targetTree.child, child)
+		}
+		this.addTree(parr[1:], sourceTree, child)
+	} else {
+		targetTree.child = append(targetTree.child, sourceTree.child...)
+		targetTree.runObject = sourceTree.runObject
+	}
 }
 
 func (this *RouterTree) addSeq(parr []string, obj interface{}, tree *RouterTree) {
@@ -38,10 +63,8 @@ func (this *RouterTree) addSeq(parr []string, obj interface{}, tree *RouterTree)
 			child = NewRouterTree()
 			child.prefix = parr[0]
 			tree.child = append(tree.child, child)
-			this.addSeq(parr[1:], obj, child)
-		} else {
-			this.addSeq(parr[1:], obj, child)
 		}
+		this.addSeq(parr[1:], obj, child)
 	} else {
 		tree.runObject = obj
 	}
