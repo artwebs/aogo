@@ -18,13 +18,15 @@ import (
 )
 
 var (
-	sessions map[string]*Session
-	routers  map[string]*Router
+	sessions   map[string]*Session
+	routers    map[string]*Router
+	routerTree *web.RouterTree
 )
 
 func main() {
 	sessions = make(map[string]*Session)
 	routers = make(map[string]*Router)
+
 	reload()
 	web.Router("/", &IndexController{}, "Index")
 	web.HandleFunc("/reload", GOReload)
@@ -33,6 +35,7 @@ func main() {
 }
 
 func reload() {
+	routerTree = web.NewRouterTree()
 	sstr := readSimple("session.json")
 	if sstr != "" {
 		json.Unmarshal([]byte(sstr), &sessions)
@@ -58,16 +61,16 @@ func reload() {
 					json.Unmarshal([]byte(sstr), &temp)
 					for k, v := range temp {
 						if strings.HasPrefix(k, "/") {
-							routers[k] = v
+							routerTree.AddRouter(k, v)
 						} else {
-							routers["/"+strings.TrimSuffix(f.Name(), ".json")+"/"+k] = v
+							routerTree.AddRouter("/"+strings.TrimSuffix(f.Name(), ".json")+"/"+k, v)
 						}
 					}
 				}
 			}
 			return nil
 		})
-	log.Info("router", routers)
+	log.Info("routerTree", routerTree)
 }
 
 func GOReload(w http.ResponseWriter, req *http.Request) {
@@ -80,10 +83,11 @@ type IndexController struct {
 }
 
 func (this *IndexController) Index() {
-	router := strings.Join(this.UrlKey, "/")
-	log.InfoTag(this, "Index", router)
-
-	if val, ok := routers[router]; ok {
+	this.UrlKey = this.UrlVal[:]
+	router := "/" + strings.Join(this.UrlKey, "/")
+	_, obj := routerTree.FindRouter(router)
+	if obj != nil {
+		val := obj.(*Router)
 		if !this.verfiySession(val.Session) {
 			return
 		}

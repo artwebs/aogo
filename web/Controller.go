@@ -111,6 +111,7 @@ func (this *Controller) Template(args ...string) string {
 	if v, ok := this.Data["nspace"]; ok {
 		root += v.(string)
 	}
+
 	if len(args) == 0 {
 		tpl = root + "/" + this.Ctl + "/" + this.Fun
 	} else if len(args) == 1 {
@@ -146,8 +147,8 @@ func (this *Controller) Display(args ...string) {
 		this.Data["url"] = "/"
 		this.Data["nspace"] = "/"
 	} else {
-		this.Data["url"] = strings.Join(this.UrlKey[:len(this.UrlKey)-1], "/")
-		this.Data["nspace"] = strings.Join(this.UrlKey[:len(this.UrlKey)-2], "/")
+		this.Data["url"] = "/" + strings.Join(this.UrlKey[:len(this.UrlKey)-1], "/")
+		this.Data["nspace"] = "/" + strings.Join(this.UrlKey[:len(this.UrlKey)-2], "/")
 	}
 	this.Data["res"] = this.Data["nspace"]
 	t.Execute(this.w, this.Data)
