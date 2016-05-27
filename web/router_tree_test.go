@@ -39,5 +39,6 @@ func printTree(before string, tree *RouterTree, t *testing.T) {
 }
 
 func findTree(url string, tree *RouterTree, t *testing.T) {
-	log.Println(tree.FindRouter(url), "==", url)
+	keys, obj := tree.FindRouter(url)
+	log.Println("keys=", keys, ",obj=", obj, ",url=", url)
 }

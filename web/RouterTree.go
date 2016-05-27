@@ -20,7 +20,7 @@ func (this *RouterTree) AddRouter(prefix string, obj interface{}) {
 	this.addSeq(parr, obj, this)
 }
 
-func (this *RouterTree) FindRouter(url string) interface{} {
+func (this *RouterTree) FindRouter(url string) ([]string, interface{}) {
 
 	return this.findRouter(this.splitPath(url), this)
 }
@@ -47,7 +47,7 @@ func (this *RouterTree) addSeq(parr []string, obj interface{}, tree *RouterTree)
 	}
 }
 
-func (this *RouterTree) findRouter(parr []string, tree *RouterTree) interface{} {
+func (this *RouterTree) findRouter(parr []string, tree *RouterTree) ([]string, interface{}) {
 	if len(parr) > 0 {
 		for _, item := range tree.child {
 			if parr[0] == item.prefix {
@@ -55,7 +55,7 @@ func (this *RouterTree) findRouter(parr []string, tree *RouterTree) interface{} 
 			}
 		}
 	}
-	return tree.runObject
+	return parr, tree.runObject
 }
 
 func (this *RouterTree) splitPath(prefix string) []string {
