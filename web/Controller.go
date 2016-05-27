@@ -144,8 +144,8 @@ func (this *Controller) Display(args ...string) {
 	}
 
 	if len(this.UrlKey) < 2 {
-		this.Data["url"] = "/"
-		this.Data["nspace"] = "/"
+		this.Data["url"] = ""
+		this.Data["nspace"] = ""
 	} else {
 		this.Data["url"] = "/" + strings.Join(this.UrlKey[:len(this.UrlKey)-1], "/")
 		this.Data["nspace"] = "/" + strings.Join(this.UrlKey[:len(this.UrlKey)-2], "/")
