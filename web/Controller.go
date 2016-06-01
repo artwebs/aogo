@@ -49,7 +49,7 @@ func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl Control
 	this.Data = make(map[string]interface{})
 	this.Form = make(map[string]interface{})
 	this.UrlVal = data[:]
-	if len(data)%2 == 0 {
+	if RouterParam == 1 && len(data)%2 == 0 {
 		index := 0
 		for {
 			if index >= len(data) {

@@ -15,6 +15,7 @@ var (
 	ViewsPath   = "views"
 	TemplateExt = "html"
 	UploadPath  = "files"
+	RouterParam = 0
 )
 
 type AppConfig struct {
@@ -39,6 +40,7 @@ func InitAppConfig() (*AppConfig, error) {
 		ViewsPath = conf.String("ViewsPath", "views")
 		TemplateExt = conf.String("TemplateExt", "html")
 		UploadPath = conf.String("TemplateExt", "files")
+		RouterParam = conf.Int("RouterParam", 0)
 	}
 	return conf, nil
 
