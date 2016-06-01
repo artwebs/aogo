@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"strings"
 
 	"github.com/artwebs/aogo/log"
@@ -14,9 +15,16 @@ var (
 )
 
 func main() {
+	version := flag.Bool("version", false, "--version")
+	flag.Parse()
+	log.Info("version:v1.0.0")
+	if *version {
+		return
+	}
 	reload()
 	web.Router("/", &IndexController{}, "Index")
 	web.Run()
+
 }
 
 func reload() {
@@ -60,6 +68,21 @@ func (this *IndexController) Index() {
 			sin := this.UrlVal[1]
 			val := this.GetSession(sin)
 			if val != nil {
+				if key == "upload" {
+					file, err := this.SaveToFile("File", "")
+					if err == nil {
+						this.WriteJson(data(1, 0, "文件上传成功", map[string]interface{}{"file": file}))
+					} else {
+						data_error("文件删除失败")
+					}
+					return
+				}
+				if key == "download" {
+					file := strings.Join(this.UrlVal[2:], "/")
+					this.ServeFile(strings.TrimPrefix(file, "/"))
+					return
+				}
+
 				cursession := (this.GetSession(sin)).(map[string]interface{})
 				for k, v := range cursession {
 					if _, tok := this.Form[k]; tok {

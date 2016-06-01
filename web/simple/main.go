@@ -9,6 +9,7 @@ import (
 	"github.com/artwebs/aogo/utils"
 	"github.com/artwebs/aogo/web"
 	// "net/http"
+	"flag"
 	"io"
 	"net/http"
 	"os"
@@ -23,6 +24,12 @@ var (
 )
 
 func main() {
+	version := flag.Bool("version", false, "--version")
+	flag.Parse()
+	log.Info("version:v1.0.0")
+	if *version {
+		return
+	}
 	sessions = make(map[string]*Session)
 
 	reload()
