@@ -66,7 +66,7 @@ func (this *TestController) Upload() {
 }
 
 func (this *TestController) Save() {
-	err := this.SaveToFile("UpLoadFile", "")
+	_, err := this.SaveToFile("UpLoadFile", "")
 	if err == nil {
 		this.WriteString("success")
 	} else {

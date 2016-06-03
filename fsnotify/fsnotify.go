@@ -1,44 +1,33 @@
-package main
-
-// func main() {
-// 	// webRun()
-// }
+package fsnotify
 
 import (
-	"flag"
 	"log"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-fsnotify/fsnotify"
 )
 
-var (
+type FSNotify struct {
 	sleeptime int
 	path      string
 	cmd       string
 	args      []string
-)
-
-func init() {
-	flag.IntVar(&sleeptime, "t", 30, "-t=30")
-	flag.StringVar(&path, "p", "./", "-p=filepath or dirpath")
-	flag.StringVar(&cmd, "c", "go run", "-c=command")
-	str := flag.String("a", "", `-a="args1 args2"`)
-	flag.Parse()
-	args = strings.Split(*str, " ")
 }
 
-func main() {
+func NewFSNotify() *FSNotify {
+	return &FSNotify{sleeptime: 30, path: "./", cmd: "", args: []string{}}
+}
+
+func (this *FSNotify) Run() {
 	Watch, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Println("Init monitor error: ", err.Error())
 		return
 	}
-	if err := Watch.Add(path); err != nil {
-		log.Println("Add monitor path error: ", path)
+	if err := Watch.Add(this.path); err != nil {
+		log.Println("Add monitor path error: ", this.path)
 		return
 	}
 	var (
@@ -52,9 +41,9 @@ func main() {
 			if !cron {
 				cron = true
 				go func() {
-					T := time.After(time.Second * time.Duration(sleeptime))
+					T := time.After(time.Second * time.Duration(this.sleeptime))
 					<-T
-					if err := call(cmd, args...); err != nil {
+					if err := call(this.cmd, this.args...); err != nil {
 						log.Println(err)
 					}
 					lock.Lock()
