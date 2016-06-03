@@ -8,16 +8,17 @@ import (
 	"io"
 	"log"
 	"math/rand"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
-	"reflect"
 )
 
 const (
@@ -212,11 +213,19 @@ func Hex(b []byte) string {
 	return hex.EncodeToString(b)
 }
 
-func Tag(obj interface{})string{
+func Tag(obj interface{}) string {
 	return reflect.Indirect(reflect.ValueOf(obj)).Type().Name()
 }
 
-func StrUpperUnderline(s string) string{
+func StrUpperUnderline(s string) string {
 	reg := regexp.MustCompile(`([A-Z])`)
 	return strings.TrimPrefix(strings.ToLower(reg.ReplaceAllString(s, "_"+"$1")), "_")
+}
+
+func UrlEncode(s string) string {
+	return url.QueryEscape(s)
+}
+
+func UrlDecode(s string) (string, error) {
+	return url.QueryUnescape(s)
 }

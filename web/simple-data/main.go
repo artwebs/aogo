@@ -2,20 +2,25 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
+	"reflect"
 	"strings"
 
 	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/security"
 	"github.com/artwebs/aogo/utils"
 	"github.com/artwebs/aogo/web"
 )
 
 var (
-	filter []string
+	filter               []string
+	runmode, securitykey string
 )
 
 func main() {
 	version := flag.Bool("version", false, "--version")
+
 	flag.Parse()
 	log.Info("version:v1.0.0")
 	if *version {
@@ -33,11 +38,14 @@ func reload() {
 		sin := conf.String("Session::login", "")
 		if sin != "" {
 			filter = strings.Split(sin, ":")
-			return
+		} else {
+			filter = []string{"login"}
 		}
+
+		runmode = conf.String("RunMode", "dev")
+		securitykey = conf.String("SecurityKey", "Y8gyxetKJ68N3d35Lass72GP")
 	}
 
-	filter = []string{"login"}
 }
 
 type IndexController struct {
@@ -54,60 +62,122 @@ func data_error(message string) map[string]interface{} {
 
 func (this *IndexController) Index() {
 	log.InfoTag(this, this.UrlVal)
-
+	this.parseQuery()
 	if len(this.UrlVal) >= 1 {
-		model := &DefaultModel{}
-		web.D(model)
 		key := this.UrlVal[0]
-		if !utils.InSlice(key, filter) {
-			if len(this.UrlVal) < 2 {
-				this.WriteJson(data_error("请先进行登录"))
-				return
-			}
-
-			sin := this.UrlVal[1]
-			val := this.GetSession(sin)
-			if val != nil {
-				if key == "upload" {
-					file, err := this.SaveToFile("File", "")
-					if err == nil {
-						this.WriteJson(data(1, 0, "文件上传成功", map[string]interface{}{"file": file}))
-					} else {
-						data_error("文件删除失败")
-					}
-					return
-				}
-				if key == "download" {
-					file := strings.Join(this.UrlVal[2:], "/")
-					this.ServeFile(strings.TrimPrefix(file, "/"))
-					return
-				}
-
-				cursession := (this.GetSession(sin)).(map[string]interface{})
-				for k, v := range cursession {
-					if _, tok := this.Form[k]; tok {
-						this.Form["_"+k] = v
-					} else {
-						this.Form[k] = v
-					}
-				}
-				this.WriteJson(model.Aws(key, this.Form))
-			} else {
-				this.WriteJson(data_error("非法登录"))
-			}
+		if val := reflect.ValueOf(this).MethodByName(key); val.IsValid() || key == strings.Title(key) {
+			val.Call([]reflect.Value{})
 		} else {
-			data := model.Aws(key, this.Form)
-			if code, ok := data["code"]; ok {
-				if code.(float64) > 0 {
-					this.SetSession(key, data["result"])
-				}
-				this.WriteJson(data)
-			} else {
-				this.WriteJson(data_error("验证失败"))
-			}
+			this.Normal()
 		}
+
 	} else {
 		this.WriteJson(data_error("非法请求，已经进行了记录"))
+	}
+}
+
+func (this *IndexController) Login() {
+	key := this.UrlVal[0]
+	this.SetSession(key, this.Form)
+	this.WriteJson(data(1, 0, "登录成功", ""))
+}
+
+func (this *IndexController) Normal() {
+	if err := this.verfiySession(); err != nil {
+		this.write(data_error(err.Error()))
+		return
+	}
+	model := &DefaultModel{}
+	web.D(model)
+	key := this.UrlVal[0]
+	this.write(model.Aws(key, this.Form))
+}
+
+func (this *IndexController) Upload() {
+	if err := this.verfiySession(); err != nil {
+		this.WriteJson(data_error(err.Error()))
+		return
+	}
+	file, err := this.SaveToFile("File", "")
+	if err == nil {
+		this.write(data(1, 0, "文件上传成功", map[string]interface{}{"file": file}))
+	} else {
+		this.write(data_error("文件删除失败"))
+	}
+}
+
+func (this *IndexController) Download() {
+	if err := this.verfiySession(); err != nil {
+		this.write(data_error(err.Error()))
+		return
+	}
+	file := strings.Join(this.UrlVal[2:], "/")
+	this.ServeFile(strings.TrimPrefix(file, "/"))
+}
+
+func (this *IndexController) verfiySession() error {
+	client := this.GetSession("client")
+	if client == nil {
+		return errors.New("非法请求，已经进行了记录")
+	}
+	this.addForm(client.(map[string]interface{}))
+	return nil
+}
+
+func (this *IndexController) parseQuery() error {
+	if val, ok := this.Form["cmd"]; ok {
+		aesObj := security.NewSecurityAES()
+		str, err := aesObj.DecryptString(securitykey, val.(string))
+		if err == nil {
+			json.Unmarshal([]byte(str), &this.Form)
+			delete(this.Form, "cmd")
+		} else {
+			return errors.New("非法数据请求，已经进行了记录")
+		}
+	} else if runmode == "product" {
+		return errors.New("数据非法请求，已经进行了记录")
+	}
+	return nil
+
+}
+
+func (this *IndexController) Encode() {
+	str, err := this.encode(this.Form)
+	if err == nil {
+		this.WriteString(utils.UrlEncode(str))
+	} else {
+		this.WriteString(err.Error())
+	}
+
+}
+
+func (this *IndexController) Decode() {
+	this.WriteJson(this.Form)
+}
+
+func (this *IndexController) write(d map[string]interface{}) {
+	if runmode == "product" {
+		data, _ := this.encode(d)
+		this.WriteString(data)
+	} else {
+		this.WriteJson(d)
+	}
+
+}
+
+func (this *IndexController) encode(d map[string]interface{}) (string, error) {
+	data, _ := json.Marshal(d)
+	aesObj := security.NewSecurityAES()
+	return aesObj.EncryptString(securitykey, string(data))
+}
+
+func (this *IndexController) addForm(obj map[string]interface{}) {
+	for k, v := range obj {
+		if _, tok := this.Form[k]; tok {
+			this.Form["_"+k] = v
+		} else {
+			this.Form[k] = v
+		}
 	}
 }
 

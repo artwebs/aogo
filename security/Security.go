@@ -29,7 +29,7 @@ type Security struct {
 }
 
 func (this *Security) GenerateKey(size int) string {
-	return string(util.RandomBytes(size))
+	return string(utils.RandomBytes(size))
 }
 
 func (this *Security) GetKey(key []byte, keySize int) []byte {
