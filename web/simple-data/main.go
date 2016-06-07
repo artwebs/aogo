@@ -50,6 +50,7 @@ func reload() {
 
 type IndexController struct {
 	web.Controller
+	isEncrypt bool
 }
 
 func data(code, count int, message string, obj interface{}) map[string]interface{} {
@@ -61,6 +62,7 @@ func data_error(message string) map[string]interface{} {
 }
 
 func (this *IndexController) Index() {
+	this.isEncrypt = false
 	log.InfoTag(this, this.UrlVal)
 	this.parseQuery()
 	if len(this.UrlVal) >= 1 {
@@ -131,6 +133,7 @@ func (this *IndexController) parseQuery() error {
 		if err == nil {
 			json.Unmarshal([]byte(str), &this.Form)
 			delete(this.Form, "cmd")
+			this.isEncrypt = true
 		} else {
 			return errors.New("非法数据请求，已经进行了记录")
 		}
@@ -156,7 +159,7 @@ func (this *IndexController) Decode() {
 }
 
 func (this *IndexController) write(d map[string]interface{}) {
-	if runmode == "product" {
+	if runmode == "product" || this.isEncrypt {
 		data, _ := this.encode(d)
 		this.WriteString(data)
 	} else {
