@@ -80,8 +80,26 @@ func (this *IndexController) Index() {
 
 func (this *IndexController) Login() {
 	key := this.UrlVal[0]
+	if _, ok := this.Form["appId"]; !ok {
+		goto fail
+	}
+
+	if _, ok := this.Form["clientId"]; !ok {
+		goto fail
+	}
+
+	if _, ok := this.Form["clientVersion"]; !ok {
+		goto fail
+	}
+
 	this.SetSession(key, this.Form)
-	this.WriteJson(data(1, 0, "登录成功", ""))
+	this.write(data(1, 0, "登录成功", ""))
+	return
+fail:
+	{
+		this.write(data_error("非法登录！"))
+		return
+	}
 }
 
 func (this *IndexController) Normal() {
