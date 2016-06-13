@@ -136,7 +136,7 @@ func (this *IndexController) Download() {
 }
 
 func (this *IndexController) verfiySession() error {
-	client := this.GetSession("client")
+	client := this.GetSession("Login")
 	if client == nil {
 		return errors.New("非法请求，已经进行了记录")
 	}
