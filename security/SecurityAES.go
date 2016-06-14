@@ -16,7 +16,11 @@ func NewSecurityAES() *SecurityAES {
 }
 
 func (this *SecurityAES) EncryptString(key, data string) (string, error) {
-	crypted, err := this.Encrypt([]byte(key), []byte(data))
+	return this.EncryptStringWithIV(key, key, data)
+}
+
+func (this *SecurityAES) EncryptStringWithIV(key, iv, data string) (string, error) {
+	crypted, err := this.EncryptWithIV([]byte(key), []byte(iv), []byte(data))
 	if err == nil {
 		return base64.StdEncoding.EncodeToString(crypted), err
 	}
@@ -24,24 +28,32 @@ func (this *SecurityAES) EncryptString(key, data string) (string, error) {
 }
 
 func (this *SecurityAES) Encrypt(key, data []byte) ([]byte, error) {
+	return this.EncryptWithIV(key, key, data)
+}
+
+func (this *SecurityAES) EncryptWithIV(key, iv, data []byte) ([]byte, error) {
 	key = this.GetKey(key, this.keySize)
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 	originalData := PKCS5Padding(data, block.BlockSize())
-	blockMode := cipher.NewCBCEncrypter(block, this.GetIV(key, block.BlockSize()))
+	blockMode := cipher.NewCBCEncrypter(block, this.GetIV(iv, block.BlockSize()))
 	crypted := make([]byte, len(originalData))
 	blockMode.CryptBlocks(crypted, originalData)
 	return crypted, nil
 }
 
 func (this *SecurityAES) DecryptString(key, data string) (string, error) {
+	return this.DecryptStringWithIV(key, key, data)
+}
+
+func (this *SecurityAES) DecryptStringWithIV(key, iv, data string) (string, error) {
 	dataByte, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
 	}
-	originalData, err := this.Decrypt([]byte(key), dataByte)
+	originalData, err := this.DecryptWithIV([]byte(key), []byte(iv), dataByte)
 	if err == nil {
 		return string(originalData), err
 	}
@@ -49,12 +61,16 @@ func (this *SecurityAES) DecryptString(key, data string) (string, error) {
 }
 
 func (this *SecurityAES) Decrypt(key, data []byte) ([]byte, error) {
+	return this.DecryptWithIV(key, key, data)
+}
+
+func (this *SecurityAES) DecryptWithIV(key, iv, data []byte) ([]byte, error) {
 	key = this.GetKey(key, this.keySize)
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	blockMode := cipher.NewCBCDecrypter(block, this.GetIV(key, block.BlockSize()))
+	blockMode := cipher.NewCBCDecrypter(block, this.GetIV(iv, block.BlockSize()))
 	originalData := make([]byte, len(data))
 	blockMode.CryptBlocks(originalData, data)
 	originalData = PKCS5UnPadding(originalData)
