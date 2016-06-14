@@ -12,7 +12,7 @@ type SecurityAES struct {
 }
 
 func NewSecurityAES() *SecurityAES {
-	return &SecurityAES{Security: Security{keySize: 24}}
+	return &SecurityAES{Security: Security{keySize: 32}}
 }
 
 func (this *SecurityAES) EncryptString(key, data string) (string, error) {
@@ -71,6 +71,7 @@ func (this *SecurityAES) DecryptWithIV(key, iv, data []byte) ([]byte, error) {
 		return nil, err
 	}
 	blockMode := cipher.NewCBCDecrypter(block, this.GetIV(iv, block.BlockSize()))
+
 	originalData := make([]byte, len(data))
 	blockMode.CryptBlocks(originalData, data)
 	originalData = PKCS5UnPadding(originalData)
