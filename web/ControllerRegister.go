@@ -27,7 +27,7 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	urlarr := strings.Split(strings.Split(url, "?")[0], "/")
+	urlarr := strings.Split(strings.Trim(strings.Split(url, "?")[0], "/"), "/")
 	data, handler := this.tree.FindRouter(strings.Split(url, "?")[0])
 	if handler != nil {
 		this.doController(data, urlarr, handler, w, r)
