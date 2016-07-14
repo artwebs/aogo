@@ -6,8 +6,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -228,4 +230,11 @@ func UrlEncode(s string) string {
 
 func UrlDecode(s string) (string, error) {
 	return url.QueryUnescape(s)
+}
+
+func HttpGet(url string) string {
+	response, _ := http.Get(url)
+	defer response.Body.Close()
+	body, _ := ioutil.ReadAll(response.Body)
+	return string(body)
 }

@@ -103,6 +103,9 @@ func (this *Driver) Init(DriverName, DataSourceName, TabPrifix string) {
 }
 
 func (this *Driver) Conn() {
+	if this.db != nil {
+		this.Close()
+	}
 	var err error
 	this.db, err = sql.Open(this.DriverName, this.DataSourceName)
 	if err != nil {
@@ -115,6 +118,7 @@ func (this *Driver) Close() {
 		return
 	}
 	this.db.Close()
+	this.db = nil
 }
 
 func (this *Driver) getTabName() string {
