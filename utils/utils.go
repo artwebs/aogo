@@ -102,6 +102,26 @@ func NowDateTimeFormater(fmt string) string {
 	return TimeForamter(NowDateTime(), fmt)
 }
 
+//str -24h(s,m,h)
+func DateTimeAdd(str string, len time.Duration) time.Time {
+	tmp, _ := time.ParseDuration(str)
+	return time.Now().Add(tmp * len)
+}
+
+func DateTime(t time.Time) string {
+	return DataTimeForamter(t, "yy-mm-dd hh:mi:ss")
+}
+
+func DataTimeForamter(t time.Time, f string) string {
+	f = strings.Replace(f, "yy", "2006", -1)
+	f = strings.Replace(f, "mm", "01", -1)
+	f = strings.Replace(f, "dd", "02", -1)
+	f = strings.Replace(f, "hh", "15", -1)
+	f = strings.Replace(f, "mi", "04", -1)
+	f = strings.Replace(f, "ss", "05", -1)
+	return t.Format(f)
+}
+
 func TimeForamter(s, fmt string) string {
 	fmt = strings.Replace(fmt, "yy", "2006", -1)
 	fmt = strings.Replace(fmt, "mm", "01", -1)
