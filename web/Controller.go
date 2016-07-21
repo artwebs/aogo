@@ -85,6 +85,10 @@ func (this *Controller) Redirect(url string) {
 	http.Redirect(this.w, this.r, url, http.StatusFound)
 }
 
+func (this *Controller) Header(code int) {
+	this.w.WriteHeader(code)
+}
+
 func (this *Controller) WriteString(str string) {
 	this.w.Write([]byte(str))
 }
