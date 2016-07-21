@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	Register("sqlite", &Sqlite{})
+	Register("sqlite3", &Sqlite{})
 }
 
 type Sqlite struct {
