@@ -146,3 +146,7 @@ func (this *Model) IsCache(flag bool) *Model {
 	this.Drv.IsCache(flag)
 	return this
 }
+
+func (this *Model) DeleteCache() {
+	this.Drv.DeleteCache()
+}

@@ -43,6 +43,7 @@ type Driver struct {
 	whereArgs                   []interface{}
 	limit, order, group, having string
 	isCache                     bool
+	cacheKey                    string
 }
 
 type DriverInterface interface {
@@ -73,6 +74,7 @@ type DriverInterface interface {
 	Having(h string) DriverInterface
 	Field(fields ...string) DriverInterface
 	ClearCache(args ...string)
+	DeleteCache()
 }
 
 func (this *Driver) SetTabName(name string) {
@@ -190,11 +192,11 @@ func (this *Driver) Query(s string, args ...interface{}) ([]map[string]string, e
 
 func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
 	defer this.Reset()
-	cacheKey := this.getCacheName(s, args...)
-	if this.CacheObj != nil && this.CacheObj.IsExist(cacheKey) && this.isCache {
-		aolog.InfoTag(this, " get "+cacheKey)
+	this.cacheKey = this.getCacheName(s, args...)
+	if this.CacheObj != nil && this.CacheObj.IsExist(this.cacheKey) && this.isCache {
+		aolog.InfoTag(this, " get "+this.cacheKey)
 		result := []map[string]string{}
-		rbyte, err := base64.StdEncoding.DecodeString(this.CacheObj.GetString(cacheKey))
+		rbyte, err := base64.StdEncoding.DecodeString(this.CacheObj.GetString(this.cacheKey))
 		if err == nil {
 			json.Unmarshal(rbyte, &result)
 		}
@@ -231,12 +233,11 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 		result = append(result, row)
 	}
 	if this.CacheObj != nil && this.isCache {
-		aolog.InfoTag(this, " save "+cacheKey)
+		aolog.InfoTag(this, " save "+this.cacheKey)
 		rbyte, err := json.Marshal(result)
 		if err == nil {
-			aolog.InfoTag(this, this.CacheObj.Put(cacheKey, base64.StdEncoding.EncodeToString(rbyte), 600*time.Second))
+			aolog.InfoTag(this, this.CacheObj.Put(this.cacheKey, base64.StdEncoding.EncodeToString(rbyte), 600*time.Second))
 		}
-
 	}
 	return result, nil
 }
@@ -423,4 +424,8 @@ func (this *Driver) ClearCache(args ...string) {
 	for i := range args {
 		this.CacheObj.Delete(args[i])
 	}
+}
+
+func (this *Driver) DeleteCache() {
+	this.ClearCache(this.cacheKey)
 }
