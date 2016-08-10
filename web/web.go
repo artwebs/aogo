@@ -38,7 +38,7 @@ func Run() {
 		HandleFile(item+"/js", ViewsPath)
 		HandleFile(item+"/images", ViewsPath)
 	}
-	aolog.Info(register.tree)
+	register.tree.PrintTree("")
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second}
 	aolog.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
 	err := conn.ListenAndServe()

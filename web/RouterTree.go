@@ -3,6 +3,8 @@ package web
 import (
 	"regexp"
 	"strings"
+
+	"github.com/artwebs/aogo/log"
 )
 
 type RouterTree struct {
@@ -87,6 +89,16 @@ func (this *RouterTree) splitPath(prefix string) []string {
 		return []string{}
 	}
 	return strings.Split(prefix, "/")
+}
+
+func (this *RouterTree) PrintTree(pprefix string) {
+	log.InfoTag(this, pprefix+this.prefix, this.runObject)
+	if c := this.child; c != nil {
+		for _, s := range c {
+			tmp := pprefix + this.prefix + "/"
+			s.PrintTree(tmp)
+		}
+	}
 }
 
 type TreeReg struct {
