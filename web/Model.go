@@ -54,7 +54,9 @@ func (this *Model) Init(args ...string) {
 	if CobjName != "" && CobjConfig != "" {
 		Cobj, err = cache.NewCache(CobjName, CobjConfig)
 	}
-	aolog.InfoTag(this, "dataSourceName", dataSourceName)
+	if err != nil {
+		aolog.InfoTag(this, "dataSourceName", dataSourceName)
+	}
 	this.Drv = database.Drivers(driverName)
 	this.Drv.Init(driverName, dataSourceName, tabPrifix)
 	this.Drv.SetCache(Cobj)
