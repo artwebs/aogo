@@ -2,8 +2,11 @@ package database
 
 import (
 	"database/sql"
+	"encoding/base64"
+	"encoding/json"
 	"strconv"
 	"strings"
+	"time"
 
 	aolog "github.com/artwebs/aogo/log"
 
@@ -39,7 +42,25 @@ func (this *Postgresql) QueryRowNoConn(s string, args ...interface{}) (map[strin
 }
 
 func (this *Postgresql) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
-	return this.Driver.QueryNoConn(this.toSql(s, args...), args...)
+	this.cacheKey = this.getCacheName(s, args...)
+	if this.CacheObj != nil && this.CacheObj.IsExist(this.cacheKey) && this.isCache {
+		aolog.InfoTag(this, " get "+this.cacheKey)
+		result := []map[string]string{}
+		rbyte, err := base64.StdEncoding.DecodeString(this.CacheObj.GetString(this.cacheKey))
+		if err == nil {
+			json.Unmarshal(rbyte, &result)
+		}
+		return result, nil
+	}
+	result, _ := this.Driver.QueryNoConn(this.toSql(s, args...), args...)
+	if this.CacheObj != nil && this.isCache {
+		aolog.InfoTag(this, " save "+this.cacheKey)
+		rbyte, err := json.Marshal(result)
+		if err == nil {
+			aolog.InfoTag(this, this.CacheObj.Put(this.cacheKey, base64.StdEncoding.EncodeToString(rbyte), 600*time.Second))
+		}
+	}
+	return result, nil
 }
 
 func (this *Postgresql) ExecNoConn(s string, args ...interface{}) (sql.Result, error) {

@@ -192,16 +192,16 @@ func (this *Driver) Query(s string, args ...interface{}) ([]map[string]string, e
 
 func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
 	defer this.Reset()
-	this.cacheKey = this.getCacheName(s, args...)
-	if this.CacheObj != nil && this.CacheObj.IsExist(this.cacheKey) && this.isCache {
-		aolog.InfoTag(this, " get "+this.cacheKey)
-		result := []map[string]string{}
-		rbyte, err := base64.StdEncoding.DecodeString(this.CacheObj.GetString(this.cacheKey))
-		if err == nil {
-			json.Unmarshal(rbyte, &result)
-		}
-		return result, nil
-	}
+	// this.cacheKey = this.getCacheName(s, args...)
+	// if this.CacheObj != nil && this.CacheObj.IsExist(this.cacheKey) && this.isCache {
+	// 	aolog.InfoTag(this, " get "+this.cacheKey)
+	// 	result := []map[string]string{}
+	// 	rbyte, err := base64.StdEncoding.DecodeString(this.CacheObj.GetString(this.cacheKey))
+	// 	if err == nil {
+	// 		json.Unmarshal(rbyte, &result)
+	// 	}
+	// 	return result, nil
+	// }
 	result := []map[string]string{}
 	aolog.Info(s, args)
 	rows, err := this.db.Query(s, args...)
@@ -232,14 +232,15 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 		}
 		result = append(result, row)
 	}
-	if this.CacheObj != nil && this.isCache {
-		aolog.InfoTag(this, " save "+this.cacheKey)
-		rbyte, err := json.Marshal(result)
-		if err == nil {
-			aolog.InfoTag(this, this.CacheObj.Put(this.cacheKey, base64.StdEncoding.EncodeToString(rbyte), 600*time.Second))
-		}
-	}
 	return result, nil
+	// if this.CacheObj != nil && this.isCache {
+	// 	aolog.InfoTag(this, " save "+this.cacheKey)
+	// 	rbyte, err := json.Marshal(result)
+	// 	if err == nil {
+	// 		aolog.InfoTag(this, this.CacheObj.Put(this.cacheKey, base64.StdEncoding.EncodeToString(rbyte), 600*time.Second))
+	// 	}
+	// }
+	// return result, nil
 }
 
 func (this *Driver) QueryRow(s string, args ...interface{}) (map[string]string, error) {
