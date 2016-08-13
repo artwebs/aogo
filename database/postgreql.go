@@ -52,3 +52,10 @@ func (this *Postgresql) toSql(s string, args ...interface{}) string {
 	}
 	return s
 }
+
+func (this *Postgresql) getCacheName(s string, args ...interface{}) string {
+	for i := 0; i < len(args); i++ {
+		s = strings.Replace(s, "$"+strconv.Itoa(i+1), args[i].(string), 1)
+	}
+	return s
+}
