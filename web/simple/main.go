@@ -87,13 +87,13 @@ type IndexController struct {
 	web.Controller
 }
 
-func (this *IndexController) Index() {
-	this.UrlKey = this.UrlVal[:]
-	router := "/" + strings.Join(this.UrlKey, "/")
+func (this *IndexController) Index(ctx *web.Context) {
+	ctx.UrlKey = ctx.UrlVal[:]
+	router := "/" + strings.Join(ctx.UrlKey, "/")
 	_, obj := routerTree.FindRouter(router)
 	if obj != nil {
 		val := obj.(*Router)
-		if !this.verfiySession(val.Session) {
+		if !this.verfiySession(ctx, val.Session) {
 			return
 		}
 		model := &DefaultModel{}
@@ -102,11 +102,11 @@ func (this *IndexController) Index() {
 			for key, value := range val.Data {
 				switch value {
 				case "SaveFile":
-					file, err := this.SaveToFile("File", "")
+					file, err := ctx.SaveToFile("File", "")
 					if err == nil {
-						this.Data[key] = map[string]interface{}{"code": 1, "message": "上传成功", "result": file}
+						ctx.Data[key] = map[string]interface{}{"code": 1, "message": "上传成功", "result": file}
 					} else {
-						this.Data[key] = map[string]interface{}{"code": 0, "message": err, "result": ""}
+						ctx.Data[key] = map[string]interface{}{"code": 0, "message": err, "result": ""}
 					}
 
 					break
@@ -119,38 +119,38 @@ func (this *IndexController) Index() {
 						d[v] %= 10
 						ss += strconv.FormatInt(int64(d[v]), 32)
 					}
-					this.SetSession(key, ss)
-					this.WriteImage(utils.NewImage(d, 100, 40))
+					ctx.SetSession(key, ss)
+					ctx.WriteImage(utils.NewImage(d, 100, 40))
 					return
 				case "DownloadFile":
 					log.InfoTag(this, "DownloadFile", strings.TrimPrefix(router, "/"))
-					this.ServeFile(strings.TrimPrefix(router, "/"))
+					ctx.ServeFile(strings.TrimPrefix(router, "/"))
 					return
 				default:
-					this.Data[key] = model.Aws(value, this.Form)
+					ctx.Data[key] = model.Aws(value, ctx.Form)
 				}
 
 			}
 		}
-		this.doSession(val.Session)
+		this.doSession(ctx, val.Session)
 		tpl := router
 		if val.Tpl != "" {
 			tpl = val.Tpl
 		}
-		this.Data["req"] = this.Form
-		if _, err := os.Stat(this.Template(tpl)); err == nil {
-			this.Display(tpl)
+		ctx.Data["req"] = ctx.Form
+		if _, err := os.Stat(ctx.Template(tpl)); err == nil {
+			ctx.Display(tpl)
 		} else {
-			this.WriteJson(this.Data)
+			ctx.WriteJson(ctx.Data)
 		}
 
 	} else {
-		this.WriteString(router + " do not find!")
+		ctx.WriteString(router + " do not find!")
 	}
 
 }
 
-func (this *IndexController) doSession(sin string) {
+func (this *IndexController) doSession(ctx *web.Context, sin string) {
 	for _, ss := range strings.Split(sin, ",") {
 		s := strings.Split(ss, ":")
 		if len(s) < 2 {
@@ -160,15 +160,15 @@ func (this *IndexController) doSession(sin string) {
 		switch s[1] {
 		case "save":
 			if val, ok := sessions[s[0]]; ok {
-				data := (this.Data[val.Name]).(map[string]interface{})
+				data := (ctx.Data[val.Name]).(map[string]interface{})
 				if (data["code"]).(float64) == 1 {
 					log.InfoTag(this, "doSession save", data["result"])
-					this.SetSession(s[0], data["result"])
+					ctx.SetSession(s[0], data["result"])
 				}
 			}
 			break
 		case "delete":
-			this.FlushSession()
+			ctx.FlushSession()
 			break
 		default:
 
@@ -176,32 +176,32 @@ func (this *IndexController) doSession(sin string) {
 	}
 }
 
-func (this *IndexController) verfiySession(sin string) bool {
+func (this *IndexController) verfiySession(ctx *web.Context, sin string) bool {
 	for _, ss := range strings.Split(sin, ",") {
 		s := strings.Split(ss, ":")
 		if len(s) == 1 {
 			if val, ok := sessions[s[0]]; ok {
-				if this.GetSession(s[0]) != nil {
-					log.InfoTag(this, this.GetSession(s[0]))
+				if ctx.GetSession(s[0]) != nil {
+					log.InfoTag(this, ctx.GetSession(s[0]))
 					if val.Verfiy != "" {
-						if this.Form[val.Verfiy] != this.GetSession(s[0]) {
-							this.Redirect(val.Fail)
+						if ctx.Form[val.Verfiy] != ctx.GetSession(s[0]) {
+							ctx.Redirect(val.Fail)
 							return false
 						} else {
 							continue
 						}
 					}
-					cursession := (this.GetSession(s[0])).(map[string]interface{})
+					cursession := (ctx.GetSession(s[0])).(map[string]interface{})
 					for k, v := range cursession {
-						if _, tok := this.Form[k]; tok {
-							this.Form["_"+k] = v
+						if _, tok := ctx.Form[k]; tok {
+							ctx.Form["_"+k] = v
 						} else {
-							this.Form[k] = v
+							ctx.Form[k] = v
 						}
 					}
 					continue
 				}
-				this.Redirect(val.Fail)
+				ctx.Redirect(val.Fail)
 				return false
 			}
 		}

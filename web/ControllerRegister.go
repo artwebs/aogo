@@ -42,16 +42,18 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 	switch handler := h.(type) {
 	case *Handler:
 		reflectVal := reflect.ValueOf(handler.controller)
-		handler.controller.Init(w, r, handler.controller, handler.method, data)
-		if handler.controller.WillDid() {
-			handler.controller.SetUrl(urlarr[:len(urlarr)-len(data)])
+		ctx := &Context{}
+		ctx.Init(w, r, handler.controller, handler.method, data)
+		handler.controller.Init(ctx)
+		if handler.controller.WillDid(ctx) {
+			ctx.SetUrl(urlarr[:len(urlarr)-len(data)])
 			if val := reflectVal.MethodByName(handler.method); val.IsValid() {
-				val.Call([]reflect.Value{})
+				val.Call([]reflect.Value{reflect.ValueOf(ctx)})
 			} else {
 				panic("'' method doesn't exist in the controller " + handler.method)
 			}
 		}
-		handler.controller.Release()
+		handler.controller.Release(ctx)
 		break
 	case http.Handler:
 		handler.ServeHTTP(w, r)

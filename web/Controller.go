@@ -16,6 +16,9 @@ import (
 )
 
 type Controller struct {
+}
+
+type Context struct {
 	Ctl, Fun       string
 	w              http.ResponseWriter
 	r              *http.Request
@@ -26,22 +29,22 @@ type Controller struct {
 }
 
 type ControllerInterface interface {
-	Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string)
-	WillDid() bool
-	SetUrl(arr []string)
-	Redirect(url string)
-	WriteString(str string)
-	WriteJson(obj interface{})
-	WriteImage(img *utils.Image)
-	Release()
-	SetSession(key, value interface{})
-	GetSession(key interface{}) interface{}
-	FlushSession()
-	SaveToFile(fromfile, tofile string) (string, error)
-	ServeFile(file string)
+	Init(ctx *Context)
+	WillDid(ctx *Context) bool
+	Release(ctx *Context)
 }
 
-func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string) {
+func (this *Controller) Init(ctx *Context) {
+
+}
+
+func (this *Controller) Release(ctx *Context) {
+	if ctx.session != nil {
+		defer ctx.session.Release(ctx.w)
+	}
+}
+
+func (this *Context) Init(w http.ResponseWriter, r *http.Request, ctl ControllerInterface, fun string, data []string) {
 	this.Ctl = strings.TrimSuffix(reflect.Indirect(reflect.ValueOf(ctl)).Type().Name(), "Controller")
 	this.Fun = fun
 	this.w = w
@@ -72,34 +75,33 @@ func (this *Controller) Init(w http.ResponseWriter, r *http.Request, ctl Control
 
 }
 
-func (this *Controller) WillDid() bool {
+func (this *Controller) WillDid(ctx *Context) bool {
 	return true
 }
 
-func (this *Controller) SetUrl(arr []string) {
+func (this *Context) SetUrl(arr []string) {
 	this.UrlKey = arr[:]
 
 }
 
-func (this *Controller) Redirect(url string) {
+func (this *Context) Redirect(url string) {
 	http.Redirect(this.w, this.r, url, http.StatusFound)
 }
 
-func (this *Controller) Header(code int) {
+func (this *Context) Header(code int) {
 	this.w.WriteHeader(code)
 }
 
-func (this *Controller) WriteString(str string) {
+func (this *Context) WriteString(str string) {
 	this.w.Write([]byte(str))
 }
 
-func (this *Controller) WriteImage(img *utils.Image) {
+func (this *Context) WriteImage(img *utils.Image) {
 	this.w.Header().Set("Content-Type", "image/png")
 	img.WriteTo(this.w)
 }
 
-func (this *Controller) WriteJson(data interface{}) {
-
+func (this *Context) WriteJson(data interface{}) {
 	content, err := json.Marshal(data)
 	if err != nil {
 		log.Fatal("WriteJson Fail")
@@ -109,7 +111,7 @@ func (this *Controller) WriteJson(data interface{}) {
 	this.w.Write(content)
 }
 
-func (this *Controller) Template(args ...string) string {
+func (this *Context) Template(args ...string) string {
 	tpl := ""
 	root := ViewsPath
 	if v, ok := this.Data["nspace"]; ok {
@@ -134,7 +136,7 @@ func (this *Controller) Template(args ...string) string {
 	return tpl
 }
 
-func (this *Controller) Display(args ...string) {
+func (this *Context) Display(args ...string) {
 	tpl := this.Template(args...)
 	aolog.InfoTag(this, tpl)
 	if _, err := os.Stat(tpl); err != nil {
@@ -159,14 +161,7 @@ func (this *Controller) Display(args ...string) {
 	t.Execute(this.w, this.Data)
 }
 
-func (this *Controller) Release() {
-	if this.session != nil {
-		defer this.session.Release(this.w)
-	}
-
-}
-
-func (this *Controller) SetSession(key, value interface{}) {
+func (this *Context) SetSession(key, value interface{}) {
 	if this.session == nil {
 		this.session = InitSession()
 		this.session.Start(this.w, this.r)
@@ -174,7 +169,7 @@ func (this *Controller) SetSession(key, value interface{}) {
 	this.session.Set(key, value)
 }
 
-func (this *Controller) GetSession(key interface{}) interface{} {
+func (this *Context) GetSession(key interface{}) interface{} {
 	if this.session == nil {
 		this.session = InitSession()
 		this.session.Start(this.w, this.r)
@@ -182,7 +177,7 @@ func (this *Controller) GetSession(key interface{}) interface{} {
 	return this.session.Get(key)
 }
 
-func (this *Controller) FlushSession() {
+func (this *Context) FlushSession() {
 	if this.session == nil {
 		this.session = InitSession()
 		this.session.Start(this.w, this.r)
@@ -193,7 +188,7 @@ func (this *Controller) FlushSession() {
 // SaveToFile saves uploaded file to new path.
 // it only operates the first one of mutil-upload form file field.
 // /data/[file].[ext]
-func (this *Controller) SaveToFile(fromfile, tofile string) (string, error) {
+func (this *Context) SaveToFile(fromfile, tofile string) (string, error) {
 	if tofile == "" {
 		tofile = UploadPath + "/[file].[ext]"
 	}
@@ -214,6 +209,6 @@ func (this *Controller) SaveToFile(fromfile, tofile string) (string, error) {
 	return tofile, nil
 }
 
-func (this *Controller) ServeFile(file string) {
+func (this *Context) ServeFile(file string) {
 	http.ServeFile(this.w, this.r, file)
 }

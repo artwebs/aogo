@@ -1,12 +1,9 @@
 package web
 
 import (
-	"github.com/astaxie/beego/session"
 	"net/http"
-)
 
-var (
-	appSession *Session
+	"github.com/astaxie/beego/session"
 )
 
 type Store interface {
@@ -24,6 +21,7 @@ type Session struct {
 }
 
 func InitSession() *Session {
+	var appSession *Session
 	if appSession == nil {
 		appSession = &Session{}
 		appSession.manager, _ = session.NewManager("memory", `{"cookieName":"gosessionid", "enableSetCookie,omitempty": true, "gclifetime":3600, "maxLifetime": 3600, "secure": false, "sessionIDHashFunc": "sha1", "sessionIDHashKey": "", "cookieLifeTime": 3600, "providerConfig": ""}`)

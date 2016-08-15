@@ -25,7 +25,7 @@ type TestController struct {
 	web.Controller
 }
 
-func (this *TestController) Index() {
+func (this *TestController) Index(ctx *web.Context) {
 	// model := web.D(new(TestModel))
 	model := &UserModel{}
 	// model.DBPrifix = "PG"
@@ -39,38 +39,38 @@ func (this *TestController) Index() {
 	// aolog.Info(model.Total())
 	// aolog.Info(model.Where("id=?",1).Total())
 	aolog.Info(model.Order("id desc").Select())
-	if user, ok := this.Form["user"]; ok {
-		this.SetSession("user", user)
+	if user, ok := ctx.Form["user"]; ok {
+		ctx.SetSession("user", user)
 	}
-	aolog.Info(this.Data)
+	aolog.Info(ctx.Data)
 	tmp := make(map[string]interface{})
 	tmp["a"] = 1
 	tmp["b"] = "jom"
-	this.WriteJson(tmp)
+	ctx.WriteJson(tmp)
 	// this.WriteString("artwebs")
 	// this.WriteString("artwebs1")
 }
 
-func (this *TestController) TestTpl() {
-	aolog.Info(this.GetSession("user"))
-	this.Data["name"] = "hello"
-	this.Display()
+func (this *TestController) TestTpl(ctx *web.Context) {
+	aolog.Info(ctx.GetSession("user"))
+	ctx.Data["name"] = "hello"
+	ctx.Display()
 }
 
-func (this *TestController) Loginout() {
-	this.FlushSession()
+func (this *TestController) Loginout(ctx *web.Context) {
+	ctx.FlushSession()
 }
 
-func (this *TestController) Upload() {
-	this.Display()
+func (this *TestController) Upload(ctx *web.Context) {
+	ctx.Display()
 }
 
-func (this *TestController) Save() {
-	_, err := this.SaveToFile("UpLoadFile", "")
+func (this *TestController) Save(ctx *web.Context) {
+	_, err := ctx.SaveToFile("UpLoadFile", "")
 	if err == nil {
-		this.WriteString("success")
+		ctx.WriteString("success")
 	} else {
-		this.WriteString("fail")
+		ctx.WriteString("fail")
 	}
 }
 

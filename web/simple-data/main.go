@@ -61,96 +61,96 @@ func data_error(message string) map[string]interface{} {
 	return data(0, 0, message, "")
 }
 
-func (this *IndexController) Index() {
+func (this *IndexController) Index(ctx *web.Context) {
 	this.isEncrypt = false
-	log.InfoTag(this, this.UrlVal)
-	this.parseQuery()
-	if len(this.UrlVal) >= 1 {
-		key := this.UrlVal[0]
+	log.InfoTag(this, ctx.UrlVal)
+	this.parseQuery(ctx)
+	if len(ctx.UrlVal) >= 1 {
+		key := ctx.UrlVal[0]
 		if val := reflect.ValueOf(this).MethodByName(key); val.IsValid() || key == strings.Title(key) {
 			val.Call([]reflect.Value{})
 		} else {
-			this.Normal()
+			this.Normal(ctx)
 		}
 
 	} else {
-		this.WriteJson(data_error("非法请求，已经进行了记录"))
+		ctx.WriteJson(data_error("非法请求，已经进行了记录"))
 	}
 }
 
-func (this *IndexController) Login() {
-	key := this.UrlVal[0]
-	if _, ok := this.Form["appId"]; !ok {
+func (this *IndexController) Login(ctx *web.Context) {
+	key := ctx.UrlVal[0]
+	if _, ok := ctx.Form["appId"]; !ok {
 		goto fail
 	}
 
-	if _, ok := this.Form["clientId"]; !ok {
+	if _, ok := ctx.Form["clientId"]; !ok {
 		goto fail
 	}
 
-	if _, ok := this.Form["clientVersion"]; !ok {
+	if _, ok := ctx.Form["clientVersion"]; !ok {
 		goto fail
 	}
 
-	this.SetSession(key, this.Form)
-	this.write(data(1, 0, "登录成功", ""))
+	ctx.SetSession(key, ctx.Form)
+	this.write(ctx, data(1, 0, "登录成功", ""))
 	return
 fail:
 	{
-		this.write(data_error("非法登录！"))
+		this.write(ctx, data_error("非法登录！"))
 		return
 	}
 }
 
-func (this *IndexController) Normal() {
-	if err := this.verfiySession(); err != nil {
-		this.write(data_error(err.Error()))
+func (this *IndexController) Normal(ctx *web.Context) {
+	if err := this.verfiySession(ctx); err != nil {
+		this.write(ctx, data_error(err.Error()))
 		return
 	}
 	model := &DefaultModel{}
 	web.D(model)
-	key := this.UrlVal[0]
-	this.write(model.Aws(key, this.Form))
+	key := ctx.UrlVal[0]
+	this.write(ctx, model.Aws(key, ctx.Form))
 }
 
-func (this *IndexController) Upload() {
-	if err := this.verfiySession(); err != nil {
-		this.WriteJson(data_error(err.Error()))
+func (this *IndexController) Upload(ctx *web.Context) {
+	if err := this.verfiySession(ctx); err != nil {
+		ctx.WriteJson(data_error(err.Error()))
 		return
 	}
-	file, err := this.SaveToFile("File", "")
+	file, err := ctx.SaveToFile("File", "")
 	if err == nil {
-		this.write(data(1, 0, "文件上传成功", map[string]interface{}{"file": file}))
+		this.write(ctx, data(1, 0, "文件上传成功", map[string]interface{}{"file": file}))
 	} else {
-		this.write(data_error("文件删除失败"))
+		this.write(ctx, data_error("文件删除失败"))
 	}
 }
 
-func (this *IndexController) Download() {
-	if err := this.verfiySession(); err != nil {
-		this.write(data_error(err.Error()))
+func (this *IndexController) Download(ctx *web.Context) {
+	if err := this.verfiySession(ctx); err != nil {
+		this.write(ctx, data_error(err.Error()))
 		return
 	}
-	file := strings.Join(this.UrlVal[2:], "/")
-	this.ServeFile(strings.TrimPrefix(file, "/"))
+	file := strings.Join(ctx.UrlVal[2:], "/")
+	ctx.ServeFile(strings.TrimPrefix(file, "/"))
 }
 
-func (this *IndexController) verfiySession() error {
-	client := this.GetSession("Login")
+func (this *IndexController) verfiySession(ctx *web.Context) error {
+	client := ctx.GetSession("Login")
 	if client == nil {
 		return errors.New("非法请求，已经进行了记录")
 	}
-	this.addForm(client.(map[string]interface{}))
+	this.addForm(ctx, client.(map[string]interface{}))
 	return nil
 }
 
-func (this *IndexController) parseQuery() error {
-	if val, ok := this.Form["cmd"]; ok {
+func (this *IndexController) parseQuery(ctx *web.Context) error {
+	if val, ok := ctx.Form["cmd"]; ok {
 		aesObj := security.NewSecurityAES()
 		str, err := aesObj.DecryptString(securitykey, val.(string))
 		if err == nil {
-			json.Unmarshal([]byte(str), &this.Form)
-			delete(this.Form, "cmd")
+			json.Unmarshal([]byte(str), &ctx.Form)
+			delete(ctx.Form, "cmd")
 			this.isEncrypt = true
 		} else {
 			return errors.New("非法数据请求，已经进行了记录")
@@ -162,26 +162,26 @@ func (this *IndexController) parseQuery() error {
 
 }
 
-func (this *IndexController) Encode() {
-	str, err := this.encode(this.Form)
+func (this *IndexController) Encode(ctx *web.Context) {
+	str, err := this.encode(ctx.Form)
 	if err == nil {
-		this.WriteString(utils.UrlEncode(str))
+		ctx.WriteString(utils.UrlEncode(str))
 	} else {
-		this.WriteString(err.Error())
+		ctx.WriteString(err.Error())
 	}
 
 }
 
-func (this *IndexController) Decode() {
-	this.WriteJson(this.Form)
+func (this *IndexController) Decode(ctx *web.Context) {
+	ctx.WriteJson(ctx.Form)
 }
 
-func (this *IndexController) write(d map[string]interface{}) {
+func (this *IndexController) write(ctx *web.Context, d map[string]interface{}) {
 	if runmode == "product" || this.isEncrypt {
 		data, _ := this.encode(d)
-		this.WriteString(data)
+		ctx.WriteString(data)
 	} else {
-		this.WriteJson(d)
+		ctx.WriteJson(d)
 	}
 
 }
@@ -192,12 +192,12 @@ func (this *IndexController) encode(d map[string]interface{}) (string, error) {
 	return aesObj.EncryptString(securitykey, string(data))
 }
 
-func (this *IndexController) addForm(obj map[string]interface{}) {
+func (this *IndexController) addForm(ctx *web.Context, obj map[string]interface{}) {
 	for k, v := range obj {
-		if _, tok := this.Form[k]; tok {
-			this.Form["_"+k] = v
+		if _, tok := ctx.Form[k]; tok {
+			ctx.Form["_"+k] = v
 		} else {
-			this.Form[k] = v
+			ctx.Form[k] = v
 		}
 	}
 }
