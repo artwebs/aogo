@@ -1,75 +1,107 @@
 package database
 
-import "github.com/garyburd/redigo/redis"
+import (
+	"github.com/artwebs/aogo/log"
+	"github.com/garyburd/redigo/redis"
+)
 
 type DBCache struct {
-	conn redis.Conn
-	cstr string
+	Cstr string
 }
 
-func (this *DBCache) Conn() error {
-	var err error
-	if this.conn == nil {
-		this.conn, err = redis.Dial("tcp", this.cstr)
-		return err
-	}
-	return nil
+func (this *DBCache) Conn() (redis.Conn, error) {
+	return redis.Dial("tcp", this.Cstr)
 }
-func (this *DBCache) Close() error {
+func (this *DBCache) Close(conn redis.Conn) error {
 	var err error
-	if this.conn != nil {
-		err = this.conn.Close()
-		this.conn = nil
+	if conn != nil {
+		err = conn.Close()
+		conn = nil
 	}
 	return err
 }
 
 func (this *DBCache) Set(key, value string) error {
-	defer this.Close()
-	err := this.Conn()
+
+	conn, err := this.Conn()
+	defer this.Close(conn)
 	if err != nil {
 		return err
 	}
-	this.conn.Do("SET", value)
+	if _, err = conn.Do("SET", key, value, "EX", "600", "NX"); err != nil {
+		return err
+	}
 	return err
 }
 
 func (this *DBCache) SetList(name, key, value string) error {
-	defer this.Close()
-	err := this.Conn()
+	conn, err := this.Conn()
+	defer this.Close(conn)
 	if err != nil {
 		return err
 	}
-	_, err := this.conn.Do("GET", key)
-	if err != nil {
-		this.conn.Do("lpush", name, key)
+	val, err := redis.Int64(conn.Do("EXISTS", key))
+	if val == 0 {
+		_, err = conn.Do("RPUSH", name, key)
+		if err != nil {
+			return err
+		}
+		if _, err = conn.Do("SET", key, value, "EX", "600", "NX"); err != nil {
+			return err
+		}
 	}
-	this.conn.Do("SET", key, value)
 	return err
 }
 
+func (this *DBCache) IsExist(key string) bool {
+	conn, err := this.Conn()
+	defer this.Close(conn)
+	flag := false
+	if err != nil {
+		return flag
+	}
+	n, _ := redis.Int(conn.Do("EXISTS", key))
+	log.InfoTag(this, "IsExist", n, key)
+	if n == 1 {
+		return true
+	}
+	return flag
+}
+
 func (this *DBCache) Get(key string) (string, error) {
-	defer this.Close()
-	err := this.Conn()
+	conn, err := this.Conn()
+	defer this.Close(conn)
 	if err != nil {
 		return "", err
 	}
-	value, err := this.conn.Do("GET", key)
+	value, err := conn.Do("GET", key)
 	if err != nil {
 		return "", err
 	}
-	return value.(string), nil
+	return redis.String(value, err)
 }
 
 func (this *DBCache) Delete(key string) {
-	this.conn.Send("DEL", key)
-	this.conn.Do("EXEC")
+	conn, err := this.Conn()
+	if err != nil {
+		return
+	}
+	defer this.Close(conn)
+	conn.Send("DEL", key)
+	conn.Do("EXEC")
 }
 
 func (this *DBCache) DeleteList(name string) {
-	values, _ := redis.Values(this.conn.Do("lrange", name, "0", "200"))
-	for _, v := range values {
-		this.conn.Send("DEL", string(v.([]byte)))
+	conn, err := this.Conn()
+	if err != nil {
+		return
 	}
-	this.conn.Do("EXEC")
+	defer this.Close(conn)
+	values, _ := redis.Values(conn.Do("lrange", name, "0", "200"))
+	for _, v := range values {
+		log.InfoTag(this, "Del", string(v.([]byte)))
+		conn.Send("DEL", string(v.([]byte)))
+	}
+	conn.Send("DEL", name)
+	conn.Do("EXEC")
 }

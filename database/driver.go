@@ -30,6 +30,7 @@ func Drivers(name string) DriverInterface {
 }
 
 type Driver struct {
+	dbCache        *DBCache
 	CacheObj       *cache.Cache
 	DBPrifix       string
 	TabPrifix      string
@@ -49,7 +50,7 @@ type Driver struct {
 type DriverInterface interface {
 	Init(DriverName, DataSourceName, TabPrifix string)
 	SetDBPrifix(p string)
-	SetCache(c *cache.Cache)
+	SetDBCache(c *DBCache)
 	IsCache(flag bool)
 	Conn()
 	Close()
@@ -73,8 +74,6 @@ type DriverInterface interface {
 	Group(g string) DriverInterface
 	Having(h string) DriverInterface
 	Field(fields ...string) DriverInterface
-	ClearCache(args ...string)
-	DeleteCache()
 }
 
 func (this *Driver) SetTabName(name string) {
@@ -83,6 +82,10 @@ func (this *Driver) SetTabName(name string) {
 
 func (this *Driver) SetCache(c *cache.Cache) {
 	this.CacheObj = c
+}
+
+func (this *Driver) SetDBCache(c *DBCache) {
+	this.dbCache = c
 }
 
 func (this *Driver) IsCache(flag bool) {
@@ -193,16 +196,18 @@ func (this *Driver) Query(s string, args ...interface{}) ([]map[string]string, e
 func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
 	defer this.Reset()
 	this.cacheKey = this.getCacheName(s, args...)
-	if this.CacheObj != nil && this.CacheObj.IsExist(this.cacheKey) && this.isCache {
-		aolog.InfoTag(this, " get "+this.cacheKey)
-		result := []map[string]string{}
-		rbyte, err := base64.StdEncoding.DecodeString(this.CacheObj.GetString(this.cacheKey))
-		if err == nil {
-			json.Unmarshal(rbyte, &result)
-		}
-		return result, nil
-	}
 	result := []map[string]string{}
+	if this.dbCache != nil && this.dbCache.IsExist(this.cacheKey) {
+		aolog.InfoTag(this, " get =>"+this.cacheKey)
+		val, err := this.dbCache.Get(this.cacheKey)
+		if err == nil {
+			rbyte, err := base64.StdEncoding.DecodeString(val)
+			if err == nil {
+				json.Unmarshal(rbyte, &result)
+				return result, nil
+			}
+		}
+	}
 	aolog.Info(s, args)
 	rows, err := this.db.Query(s, args...)
 	if err != nil {
@@ -232,11 +237,11 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 		}
 		result = append(result, row)
 	}
-	if this.CacheObj != nil && this.isCache {
+	if this.dbCache != nil {
 		aolog.InfoTag(this, " save "+this.cacheKey)
 		rbyte, err := json.Marshal(result)
 		if err == nil {
-			aolog.InfoTag(this, this.CacheObj.Put(this.cacheKey, base64.StdEncoding.EncodeToString(rbyte), 600*time.Second))
+			aolog.InfoTag(this, this.dbCache.SetList(this.TabName, this.cacheKey, base64.StdEncoding.EncodeToString(rbyte)))
 		}
 	}
 	return result, nil
@@ -275,6 +280,9 @@ func (this *Driver) Exec(sql string, args ...interface{}) (sql.Result, error) {
 func (this *Driver) ExecNoConn(sql string, args ...interface{}) (sql.Result, error) {
 	defer this.Reset()
 	aolog.InfoTag(this, sql, args)
+	if this.dbCache != nil && this.dbCache.IsExist(this.cacheKey) {
+		this.dbCache.DeleteList(this.TabName)
+	}
 	stmt, err := this.db.Prepare(sql)
 	if err != nil {
 		return nil, err
@@ -410,6 +418,7 @@ func (this *Driver) Field(fields ...string) DriverInterface {
 
 func (this *Driver) getCacheName(s string, args ...interface{}) string {
 	jbyte, _ := json.Marshal(args)
+	// return base64.StdEncoding.EncodeToString([]byte(this.DBPrifix + " DataBase " + s + string(jbyte)))
 	return this.DBPrifix + " DataBase " + s + string(jbyte)
 }
 
