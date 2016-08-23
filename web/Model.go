@@ -50,11 +50,9 @@ func (this *Model) Init(args ...string) {
 
 	CobjName := conf.String("DBCache::name", "")
 	CobjConfig := conf.String("DBCache::config", "")
-	var Cobj *database.DBCache
+	var Cobj database.DBCache
 	if CobjName != "" && CobjConfig != "" {
-		Cobj = &database.DBCache{}
-		Cobj.Cstr = CobjConfig
-
+		Cobj = database.OpenDBCache(CobjName, CobjConfig)
 	}
 	if err != nil {
 		aolog.InfoTag(this, "dataSourceName", dataSourceName)
