@@ -62,7 +62,7 @@ func (this *Context) Init(w http.ResponseWriter, r *http.Request, ctl Controller
 			index += 2
 		}
 	}
-	aolog.DebugTag(this, "r.Form ", r.Form)
+	// aolog.DebugTag(this, "r.Form ", r.Form)
 	r.ParseForm()
 	for k, v := range r.Form {
 		if len(v) > 0 {
@@ -71,7 +71,7 @@ func (this *Context) Init(w http.ResponseWriter, r *http.Request, ctl Controller
 			this.Form[k] = v
 		}
 	}
-	aolog.DebugTag(this, "Form ", this.Form)
+	// aolog.DebugTag(this, "Form ", this.Form)
 
 }
 

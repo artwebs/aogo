@@ -200,12 +200,13 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 	this.cacheKey = this.getCacheName(s, args...)
 	result := []map[string]string{}
 	if this.dbCache != nil && this.dbCache.IsExist(this.cacheKey) {
-		aolog.InfoTag(this, " get =>"+this.cacheKey)
 		val, err := this.dbCache.GetCache(this.cacheKey)
 		if err == nil {
+			// aolog.InfoTag(this, " get =>"+this.cacheKey)
 			rbyte, err := base64.StdEncoding.DecodeString(val)
 			if err == nil {
 				json.Unmarshal(rbyte, &result)
+				// aolog.InfoTag(this, " get =>", result)
 				return result, nil
 			}
 		}
@@ -240,11 +241,12 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 		result = append(result, row)
 	}
 	if this.dbCache != nil {
-		aolog.InfoTag(this, " save "+this.cacheKey)
+		// aolog.InfoTag(this, " save "+this.cacheKey)
 		rbyte, err := json.Marshal(result)
 		if err == nil {
+			// aolog.InfoTag(this, " save =>", result)
 			this.dbCache.AddCache(strings.ToLower(this.TabPrifix+this.TabName), this.cacheKey, base64.StdEncoding.EncodeToString(rbyte))
-			aolog.InfoTag(this, this.dbCache.AddCache(this.TabName, this.cacheKey, base64.StdEncoding.EncodeToString(rbyte)))
+			// aolog.InfoTag(this, this.dbCache.AddCache(this.TabName, this.cacheKey, base64.StdEncoding.EncodeToString(rbyte)))
 		}
 	}
 	return result, nil
@@ -283,7 +285,7 @@ func (this *Driver) Exec(sql string, args ...interface{}) (sql.Result, error) {
 func (this *Driver) ExecNoConn(sql string, args ...interface{}) (sql.Result, error) {
 	defer this.Reset()
 	aolog.InfoTag(this, sql, args)
-	if this.dbCache != nil && this.dbCache.IsExist(this.cacheKey) {
+	if this.dbCache != nil {
 		this.dbCache.DelCache(strings.ToLower(this.TabPrifix + this.TabName))
 	}
 	stmt, err := this.db.Prepare(sql)
@@ -421,6 +423,7 @@ func (this *Driver) Field(fields ...string) DriverInterface {
 
 func (this *Driver) getCacheName(s string, args ...interface{}) string {
 	jbyte, _ := json.Marshal(args)
+	aolog.InfoTag(this, s+string(jbyte))
 	return base64.StdEncoding.EncodeToString([]byte(this.DBPrifix + " DataBase " + s + string(jbyte)))
 	// return this.DBPrifix + " DataBase " + s + string(jbyte)
 }

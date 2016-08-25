@@ -1,8 +1,6 @@
 package database
 
-import (
-	"github.com/bradfitz/gomemcache/memcache"
-)
+import "github.com/bradfitz/gomemcache/memcache"
 
 type Memcache struct {
 	Cstr  string
@@ -59,6 +57,8 @@ func (this *Memcache) DelCache(table string) error {
 	if err != nil {
 		return err
 	}
+	// vtemp, _ := this.mcObj.Get(table)
+	// log.InfoTag(this, string(vtemp.Value))
 	return this.mcObj.Delete(table)
 }
 func (this *Memcache) Close() error {
