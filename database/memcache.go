@@ -1,6 +1,9 @@
 package database
 
-import "github.com/bradfitz/gomemcache/memcache"
+import (
+	"github.com/artwebs/aogo/log"
+	"github.com/bradfitz/gomemcache/memcache"
+)
 
 type Memcache struct {
 	Cstr  string
@@ -19,11 +22,24 @@ func (this *Memcache) AddCache(table, key, value string) error {
 	if err != nil {
 		return err
 	}
-	vtemp, err1 := this.mcObj.Get(key)
-	if vtemp == nil {
-		this.mcObj.Set(&memcache.Item{Key: table, Value: []byte(key)})
-		this.mcObj.Set(&memcache.Item{Key: key, Value: []byte(value)})
+	_, err1 := this.mcObj.Get(key)
+	if err1 != nil {
+		log.InfoTag(this, "AddCache", err1)
+		// log.InfoTag(this, "AddCache", table, key, value)
+		err := this.mcObj.Set(&memcache.Item{Key: table, Value: []byte(key), Expiration: int32(timeOutDuration)})
+		if err != nil {
+			log.InfoTag(this, "AddCache", err)
+		}
+		err = this.mcObj.Set(&memcache.Item{Key: key, Value: []byte(value)})
+		if err != nil {
+			log.InfoTag(this, "AddCache", err)
+		}
 	}
+	// if vtemp == nil {
+	// 	log.InfoTag(this, "AddCache", table, key, value)
+	// 	this.mcObj.Set(&memcache.Item{Key: table, Value: []byte(key)})
+	// 	this.mcObj.Set(&memcache.Item{Key: key, Value: []byte(value)})
+	// }
 	return err1
 }
 
@@ -45,9 +61,11 @@ func (this *Memcache) IsExist(key string) bool {
 	if err != nil {
 		return false
 	}
-	vtemp, _ := this.mcObj.Get(key)
-	if vtemp != nil {
+	_, err = this.mcObj.Get(key)
+	if err == nil {
 		flag = true
+	} else {
+		log.InfoTag(this, "IsExist", err)
 	}
 	return flag
 }
@@ -57,9 +75,17 @@ func (this *Memcache) DelCache(table string) error {
 	if err != nil {
 		return err
 	}
-	// vtemp, _ := this.mcObj.Get(table)
-	// log.InfoTag(this, string(vtemp.Value))
-	return this.mcObj.Delete(table)
+
+	this.mcObj.DeleteAll()
+	// vtemp, err := this.mcObj.Get(table)
+	// if err != nil {
+	// 	log.InfoTag(this, "DelCache", err)
+	// 	return err
+	// }
+	// log.InfoTag(this, "DelCache", string(vtemp.Value))
+	// this.mcObj.Delete(table)
+	// return this.mcObj.Delete(table)
+	return nil
 }
 func (this *Memcache) Close() error {
 	this.mcObj = nil

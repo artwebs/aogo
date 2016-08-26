@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"strings"
-	"time"
 	// "reflect"
 	"strconv"
 
@@ -16,15 +15,23 @@ import (
 )
 
 var drivers = make(map[string]DriverInterface)
-var timeOutDuration = 10 * time.Second
+var timeOutDuration = 10 * 60
 
 func Register(name string, d DriverInterface) {
 	drivers[name] = d
 }
 
 func Drivers(name string) DriverInterface {
-	if drv, ok := drivers[name]; ok {
-		return drv
+	// if drv, ok := drivers[name]; ok {
+	// 	return drv
+	// }
+	switch name {
+	case "mysql":
+		return &Mysql{}
+	case "postgres":
+		return &Postgresql{}
+	default:
+
 	}
 	return nil
 }
@@ -43,7 +50,6 @@ type Driver struct {
 	where                       string
 	whereArgs                   []interface{}
 	limit, order, group, having string
-	isCache                     bool
 	cacheKey                    string
 }
 
@@ -51,7 +57,6 @@ type DriverInterface interface {
 	Init(DriverName, DataSourceName, TabPrifix string)
 	SetDBPrifix(p string)
 	SetDBCache(c DBCache)
-	IsCache(flag bool)
 	Conn()
 	Close()
 	SetTabName(name string)
@@ -88,10 +93,6 @@ func (this *Driver) SetDBCache(c DBCache) {
 	this.dbCache = c
 }
 
-func (this *Driver) IsCache(flag bool) {
-	this.isCache = flag
-}
-
 func (this *Driver) SetDBPrifix(p string) {
 	this.DBPrifix = p
 }
@@ -104,18 +105,17 @@ func (this *Driver) Init(DriverName, DataSourceName, TabPrifix string) {
 	this.DriverName = DriverName
 	this.DataSourceName = DataSourceName
 	this.TabPrifix = TabPrifix
-	this.isCache = true
 }
 
 func (this *Driver) Conn() {
-	if this.db != nil {
-		this.Close()
-	}
 	var err error
-	this.db, err = sql.Open(this.DriverName, this.DataSourceName)
-	if err != nil {
-		log.Fatalln("Database open fail!")
+	if this.db == nil {
+		this.db, err = sql.Open(this.DriverName, this.DataSourceName)
+		if err != nil {
+			log.Fatalln("Database open fail!")
+		}
 	}
+
 }
 
 func (this *Driver) Close() {
@@ -139,7 +139,6 @@ func (this *Driver) Reset() {
 	this.having = ""
 	this.order = ""
 	this.group = ""
-	this.isCache = true
 }
 
 func (this *Driver) addWhere(sql string, args []interface{}) (string, []interface{}) {
@@ -191,7 +190,6 @@ func (this *Driver) initSelect() string {
 
 func (this *Driver) Query(s string, args ...interface{}) ([]map[string]string, error) {
 	this.Conn()
-	defer this.Close()
 	return this.QueryNoConn(s, args...)
 }
 
@@ -205,9 +203,14 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 			// aolog.InfoTag(this, " get =>"+this.cacheKey)
 			rbyte, err := base64.StdEncoding.DecodeString(val)
 			if err == nil {
-				json.Unmarshal(rbyte, &result)
+				err := json.Unmarshal(rbyte, &result)
 				// aolog.InfoTag(this, " get =>", result)
-				return result, nil
+				if err == nil {
+					return result, nil
+				} else {
+					aolog.InfoTag(this, err, val)
+				}
+
 			}
 		}
 	}
@@ -254,7 +257,6 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 
 func (this *Driver) QueryRow(s string, args ...interface{}) (map[string]string, error) {
 	this.Conn()
-	defer this.Close()
 	return this.QueryRowNoConn(s, args...)
 }
 
@@ -278,7 +280,6 @@ func (this *Driver) QueryRowNoConn(s string, args ...interface{}) (map[string]st
 
 func (this *Driver) Exec(sql string, args ...interface{}) (sql.Result, error) {
 	this.Conn()
-	defer this.Close()
 	return this.ExecNoConn(sql, args...)
 }
 
@@ -423,7 +424,6 @@ func (this *Driver) Field(fields ...string) DriverInterface {
 
 func (this *Driver) getCacheName(s string, args ...interface{}) string {
 	jbyte, _ := json.Marshal(args)
-	aolog.InfoTag(this, s+string(jbyte))
 	return base64.StdEncoding.EncodeToString([]byte(this.DBPrifix + " DataBase " + s + string(jbyte)))
 	// return this.DBPrifix + " DataBase " + s + string(jbyte)
 }

@@ -1,6 +1,10 @@
 package database
 
-import "github.com/garyburd/redigo/redis"
+import (
+	"strconv"
+
+	"github.com/garyburd/redigo/redis"
+)
 
 type RedisCache struct {
 	Cstr  string
@@ -25,8 +29,8 @@ func (this *RedisCache) AddCache(table, key, value string) error {
 		return err1
 	}
 	if val == 0 {
-		this.rdObj.Do("SET", table, key, "EX", "600")
-		this.rdObj.Do("SET", key, value, "EX", "600")
+		this.rdObj.Do("SET", table, key, "EX", strconv.Itoa(timeOutDuration))
+		this.rdObj.Do("SET", key, value, "EX", strconv.Itoa(timeOutDuration))
 	}
 	return nil
 }
@@ -73,8 +77,12 @@ func (this *RedisCache) DelCache(table string) error {
 	this.rdObj.Do("EXEC")
 	return err
 }
+
 func (this *RedisCache) Close() error {
-	err := this.rdObj.Close()
-	this.rdObj = nil
+	var err error
+	if this.rdObj != nil {
+		err = this.rdObj.Close()
+		this.rdObj = nil
+	}
 	return err
 }

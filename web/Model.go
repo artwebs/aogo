@@ -144,7 +144,6 @@ func (this *Model) Field(fields ...string) *Model {
 	return this
 }
 
-func (this *Model) IsCache(flag bool) *Model {
-	this.Drv.IsCache(flag)
-	return this
+func (this *Model) Close() {
+	this.Drv.Close()
 }
