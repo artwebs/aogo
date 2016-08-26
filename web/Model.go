@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 	// "strconv"
-	"github.com/artwebs/aogo/cache"
+
 	"github.com/artwebs/aogo/database"
 	aolog "github.com/artwebs/aogo/log"
 )
@@ -48,18 +48,18 @@ func (this *Model) Init(args ...string) {
 		log.Fatalln("AppConfig init fail")
 	}
 
-	CobjName := conf.String("Cache::name", "")
-	CobjConfig := conf.String("Cache::config", "")
-	var Cobj *cache.Cache
+	CobjName := conf.String("DBCache::name", "")
+	CobjConfig := conf.String("DBCache::config", "")
+	var Cobj database.DBCache
 	if CobjName != "" && CobjConfig != "" {
-		Cobj, err = cache.NewCache(CobjName, CobjConfig)
+		Cobj = database.OpenDBCache(CobjName, CobjConfig)
 	}
 	if err != nil {
 		aolog.InfoTag(this, "dataSourceName", dataSourceName)
 	}
 	this.Drv = database.Drivers(driverName)
 	this.Drv.Init(driverName, dataSourceName, tabPrifix)
-	this.Drv.SetCache(Cobj)
+	this.Drv.SetDBCache(Cobj)
 	this.Drv.SetDBPrifix(dbPrifix)
 }
 
@@ -144,11 +144,6 @@ func (this *Model) Field(fields ...string) *Model {
 	return this
 }
 
-func (this *Model) IsCache(flag bool) *Model {
-	this.Drv.IsCache(flag)
-	return this
-}
-
-func (this *Model) DeleteCache() {
-	this.Drv.DeleteCache()
+func (this *Model) Close() {
+	this.Drv.Close()
 }
