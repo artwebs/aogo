@@ -108,6 +108,11 @@ func DateTimeAdd(str string, len time.Duration) time.Time {
 	return time.Now().Add(tmp * len)
 }
 
+func DataTimeForString(str string) time.Time {
+	tmp, _ := time.Parse("2006-01-02 15:04:05", str)
+	return tmp
+}
+
 func DateTime(t time.Time) string {
 	return DataTimeForamter(t, "yy-mm-dd hh:mi:ss")
 }
