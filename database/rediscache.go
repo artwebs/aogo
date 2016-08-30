@@ -3,6 +3,7 @@ package database
 import (
 	"strconv"
 
+	"github.com/artwebs/aogo/log"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -63,6 +64,7 @@ func (this *RedisCache) IsExist(key string) bool {
 }
 
 func (this *RedisCache) DelCache(table string) error {
+	log.InfoTag(this, "DelCache", table)
 	var err error
 	err = this.Conn()
 	if err != nil {
@@ -71,6 +73,7 @@ func (this *RedisCache) DelCache(table string) error {
 	var values []interface{}
 	values, err = redis.Values(this.rdObj.Do("GET", table))
 	for _, v := range values {
+		log.InfoTag(this, "delete", string(v.([]byte)))
 		this.rdObj.Send("DEL", string(v.([]byte)))
 	}
 	this.rdObj.Send("DEL", table)

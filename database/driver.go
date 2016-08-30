@@ -285,7 +285,7 @@ func (this *Driver) Exec(sql string, args ...interface{}) (sql.Result, error) {
 
 func (this *Driver) ExecNoConn(sql string, args ...interface{}) (sql.Result, error) {
 	defer this.Reset()
-	aolog.InfoTag(this, sql, args)
+	aolog.InfoTag(this, sql, args, this.dbCache)
 	if this.dbCache != nil {
 		this.dbCache.DelCache(strings.ToLower(this.TabPrifix + this.TabName))
 	}
