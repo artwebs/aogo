@@ -215,19 +215,19 @@ func (this *Context) ServeFile(file string) {
 	http.ServeFile(this.w, this.r, file)
 }
 
-func (this *Context) GetClientIP() (string, error) {
+func (this *Context) GetClientIP() (string, string, error) {
 	var ip string
 	var port string
 	var err error
 	ip, port, err = net.SplitHostPort(this.r.RemoteAddr)
 	if err != nil {
-		return ip, fmt.Errorf("userip: %q is not IP:port", this.r.RemoteAddr)
+		return ip, port, fmt.Errorf("userip: %q is not IP:port", this.r.RemoteAddr)
 
 	}
 
 	userIP := net.ParseIP(ip)
 	if userIP == nil {
-		return ip, fmt.Errorf("userip: %q is not IP:port", this.rP.RemoteAddr)
+		return ip, port, fmt.Errorf("userip: %q is not IP:port", this.r.RemoteAddr)
 	}
-	return ip, nil
+	return ip, port, nil
 }
