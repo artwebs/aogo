@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -262,4 +263,21 @@ func HttpGet(url string) string {
 	defer response.Body.Close()
 	body, _ := ioutil.ReadAll(response.Body)
 	return string(body)
+}
+
+func HttpClientIP(r *http.Request) (string, string, error) {
+	var ip string
+	var port string
+	var err error
+	ip, port, err = net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return ip, port, fmt.Errorf("userip: %q is not IP:port", r.RemoteAddr)
+
+	}
+
+	userIP := net.ParseIP(ip)
+	if userIP == nil {
+		return ip, port, fmt.Errorf("userip: %q is not IP:port", r.RemoteAddr)
+	}
+	return ip, port, nil
 }

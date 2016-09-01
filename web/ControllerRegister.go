@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/utils"
 )
 
 type ControllerRegistor struct {
@@ -21,7 +22,8 @@ func NewControllerRegistor() *ControllerRegistor {
 
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.String()
-	log.InfoTag(this, url)
+	ip, port, _ := utils.HttpClientIP(r)
+	log.InfoTag(this, ip, port, url)
 	if url == "/favicon.ico" {
 		http.ServeFile(w, r, "./favicon.ico")
 		return
@@ -39,6 +41,7 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 }
 
 func (this *ControllerRegistor) doController(data, urlarr []string, h interface{}, w http.ResponseWriter, r *http.Request) {
+
 	switch handler := h.(type) {
 	case *Handler:
 		reflectVal := reflect.ValueOf(handler.controller)
@@ -50,11 +53,6 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 			if val := reflectVal.MethodByName(handler.method); val.IsValid() {
 				val.Call([]reflect.Value{reflect.ValueOf(ctx)})
 			} else {
-				if ip, port, err := ctx.GetClientIP(); err != nil {
-					log.WarnTag(this, err)
-				} else {
-					log.InfoTag(this, ip, port)
-				}
 				panic("'' method doesn't exist in the controller " + handler.method)
 			}
 		}

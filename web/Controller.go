@@ -215,7 +215,7 @@ func (this *Context) ServeFile(file string) {
 	http.ServeFile(this.w, this.r, file)
 }
 
-func (this *Context) GetClientIP() (string, string, error) {
+func (this *Context) GetClientIP(r http.Request) (string, string, error) {
 	var ip string
 	var port string
 	var err error
