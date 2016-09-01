@@ -50,6 +50,11 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 			if val := reflectVal.MethodByName(handler.method); val.IsValid() {
 				val.Call([]reflect.Value{reflect.ValueOf(ctx)})
 			} else {
+				if ip, err := ctx.GetClientIP(); err != nil {
+					log.WarnTag(this, err)
+				} else {
+					log.InfoTag(this, ip)
+				}
 				panic("'' method doesn't exist in the controller " + handler.method)
 			}
 		}

@@ -2,9 +2,11 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"reflect"
@@ -211,4 +213,21 @@ func (this *Context) SaveToFile(fromfile, tofile string) (string, error) {
 
 func (this *Context) ServeFile(file string) {
 	http.ServeFile(this.w, this.r, file)
+}
+
+func (this *Context) GetClientIP() (string, error) {
+	var ip string
+	var port int
+	var err error
+	ip, port, err = net.SplitHostPort(req.RemoteAddr)
+	if err != nil {
+		return ip, fmt.Errorf("userip: %q is not IP:port", this.r.RemoteAddr)
+
+	}
+
+	userIP := net.ParseIP(ip)
+	if userIP == nil {
+		return ip, fmt.Errorf("userip: %q is not IP:port", req.RemoteAddr)
+	}
+	return ip, nil
 }
