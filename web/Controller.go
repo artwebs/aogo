@@ -217,7 +217,7 @@ func (this *Context) ServeFile(file string) {
 
 func (this *Context) GetClientIP() (string, error) {
 	var ip string
-	var port int
+	var port string
 	var err error
 	ip, port, err = net.SplitHostPort(this.r.RemoteAddr)
 	if err != nil {
@@ -227,7 +227,7 @@ func (this *Context) GetClientIP() (string, error) {
 
 	userIP := net.ParseIP(ip)
 	if userIP == nil {
-		return ip, fmt.Errorf("userip: %q is not IP:port", this.r.RemoteAddr)
+		return ip, fmt.Errorf("userip: %q is not IP:port", this.rP.RemoteAddr)
 	}
 	return ip, nil
 }
