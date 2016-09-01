@@ -1,21 +1,20 @@
 package database
 
 import (
-	"strconv"
-
 	"github.com/artwebs/aogo/log"
-	"github.com/garyburd/redigo/redis"
+	"github.com/hoisie/redis"
 )
 
 type RedisCache struct {
-	Cstr  string
-	rdObj redis.Conn
+	Cstr   string
+	client *redis.Client
 }
 
 func (this *RedisCache) Conn() error {
 	var err error
-	if this.rdObj == nil {
-		this.rdObj, err = redis.Dial("tcp", this.Cstr)
+
+	if this.client == nil {
+		this.client = &redis.Client{Addr: this.Cstr}
 	}
 	return err
 }
@@ -25,13 +24,12 @@ func (this *RedisCache) AddCache(table, key, value string) error {
 	if err != nil {
 		return err
 	}
-	val, err1 := redis.Int64(this.rdObj.Do("EXISTS", key))
-	if err1 != nil {
-		return err1
-	}
-	if val == 0 {
-		this.rdObj.Do("SET", table, key, "EX", strconv.Itoa(timeOutDuration))
-		this.rdObj.Do("SET", key, value, "EX", strconv.Itoa(timeOutDuration))
+
+	if ok, err1 := this.client.Exists(key); !ok {
+		this.client.Rpush(table, []byte(key))
+		this.client.Set(key, []byte(value))
+	} else {
+		log.ErrorTag(this, err1)
 	}
 	return nil
 }
@@ -42,50 +40,45 @@ func (this *RedisCache) GetCache(key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	value, err = redis.String(this.rdObj.Do("GET", key))
-	if err != nil {
-		return value, err
+	val, err1 := this.client.Get(key)
+
+	if err1 != nil {
+		return value, err1
+	} else {
+		value = string(val)
 	}
 	return value, err
 }
 
 func (this *RedisCache) IsExist(key string) bool {
-	flag := false
 	err := this.Conn()
 	if err != nil {
-		return flag
+		return false
 	}
-
-	val, _ := redis.Int64(this.rdObj.Do("EXISTS", key))
-	if val > 0 {
-		flag = true
+	flag, err := this.client.Exists(key)
+	if err != nil {
+		log.ErrorTag(this, err)
 	}
 	return flag
 }
 
 func (this *RedisCache) DelCache(table string) error {
-	log.InfoTag(this, "DelCache", table)
 	var err error
 	err = this.Conn()
 	if err != nil {
 		return err
 	}
-	var values []interface{}
-	values, err = redis.Values(this.rdObj.Do("GET", table))
-	for _, v := range values {
-		log.InfoTag(this, "delete", string(v.([]byte)))
-		this.rdObj.Send("DEL", string(v.([]byte)))
+	vals, _ := this.client.Lrange(table, 0, 500)
+	for _, v := range vals {
+		this.client.Del(string(v))
 	}
-	this.rdObj.Send("DEL", table)
-	this.rdObj.Do("EXEC")
+	this.client.Del(table)
+
 	return err
 }
 
 func (this *RedisCache) Close() error {
 	var err error
-	if this.rdObj != nil {
-		err = this.rdObj.Close()
-		this.rdObj = nil
-	}
+	this.client = nil
 	return err
 }
