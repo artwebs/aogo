@@ -219,7 +219,7 @@ func (this *Context) GetClientIP() (string, error) {
 	var ip string
 	var port int
 	var err error
-	ip, port, err = net.SplitHostPort(req.RemoteAddr)
+	ip, port, err = net.SplitHostPort(this.r.RemoteAddr)
 	if err != nil {
 		return ip, fmt.Errorf("userip: %q is not IP:port", this.r.RemoteAddr)
 
