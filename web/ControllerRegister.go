@@ -23,7 +23,7 @@ func NewControllerRegistor() *ControllerRegistor {
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.String()
 	ip, port, _ := utils.HttpClientIP(r)
-	log.InfoTag(this, ip, port, r.Header.Get("X-Forwarded-For"), url)
+	log.InfoTag(this, ip, port, r.Header.Get("X-Real-IP"), url)
 	if url == "/favicon.ico" {
 		http.ServeFile(w, r, "./favicon.ico")
 		return
