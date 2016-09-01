@@ -227,7 +227,7 @@ func (this *Context) GetClientIP() (string, error) {
 
 	userIP := net.ParseIP(ip)
 	if userIP == nil {
-		return ip, fmt.Errorf("userip: %q is not IP:port", req.RemoteAddr)
+		return ip, fmt.Errorf("userip: %q is not IP:port", this.r.RemoteAddr)
 	}
 	return ip, nil
 }
