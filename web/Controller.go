@@ -231,3 +231,10 @@ func (this *Context) GetClientIP(r http.Request) (string, string, error) {
 	}
 	return ip, port, nil
 }
+
+func (this *Context) IsMobile() bool {
+	if strings.Index(this.r.Header.Get("User-Agent"), "Mobile") > -1 {
+		return true
+	}
+	return false
+}

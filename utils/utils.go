@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	crypto_rand "crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -280,4 +281,22 @@ func HttpClientIP(r *http.Request) (string, string, error) {
 		return ip, port, fmt.Errorf("userip: %q is not IP:port", r.RemoteAddr)
 	}
 	return ip, port, nil
+}
+
+func MapFromString(str string) (map[string]interface{}, error) {
+	result := map[string]interface{}{}
+	rbyte := []byte(str)
+	err := json.Unmarshal(rbyte, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func MapToString(data map[string]interface{}) (string, error) {
+	rbyte, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(rbyte), nil
 }
