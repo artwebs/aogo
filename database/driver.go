@@ -62,11 +62,11 @@ type DriverInterface interface {
 	SetTabName(name string)
 	Db() *sql.DB
 	Query(s string, args ...interface{}) ([]map[string]string, error)
-	QueryNoConn(s string, args ...interface{}) ([]map[string]string, error)
+	QueryNoConn(conn func(), s string, args ...interface{}) ([]map[string]string, error)
 	QueryRow(s string, args ...interface{}) (map[string]string, error)
-	QueryRowNoConn(s string, args ...interface{}) (map[string]string, error)
+	QueryRowNoConn(conn func(), s string, args ...interface{}) (map[string]string, error)
 	Exec(sql string, args ...interface{}) (sql.Result, error)
-	ExecNoConn(sql string, args ...interface{}) (sql.Result, error)
+	ExecNoConn(conn func(), sql string, args ...interface{}) (sql.Result, error)
 	Insert(d DriverInterface, values map[string]interface{}) (int64, error)
 	Update(d DriverInterface, values map[string]interface{}) (int64, error)
 	Delete(d DriverInterface) (int64, error)
@@ -190,10 +190,10 @@ func (this *Driver) initSelect() string {
 
 func (this *Driver) Query(s string, args ...interface{}) ([]map[string]string, error) {
 	this.Conn()
-	return this.QueryNoConn(s, args...)
+	return this.QueryNoConn(this.Conn, s, args...)
 }
 
-func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
+func (this *Driver) QueryNoConn(conn func(), s string, args ...interface{}) ([]map[string]string, error) {
 	defer this.Reset()
 	this.cacheKey = this.getCacheName(s, args...)
 	result := []map[string]string{}
@@ -215,6 +215,7 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 		}
 	}
 	aolog.Info(s, args)
+	conn()
 	rows, err := this.db.Query(s, args...)
 	if err != nil {
 		return result, err
@@ -257,15 +258,15 @@ func (this *Driver) QueryNoConn(s string, args ...interface{}) ([]map[string]str
 
 func (this *Driver) QueryRow(s string, args ...interface{}) (map[string]string, error) {
 	this.Conn()
-	return this.QueryRowNoConn(s, args...)
+	return this.QueryRowNoConn(this.Conn, s, args...)
 }
 
-func (this *Driver) QueryRowNoConn(s string, args ...interface{}) (map[string]string, error) {
+func (this *Driver) QueryRowNoConn(conn func(), s string, args ...interface{}) (map[string]string, error) {
 	defer this.Reset()
 	this.limit = "0,1"
 	var result map[string]string
 	s = this.addLimit(s)
-	rows, err := this.QueryNoConn(s, args...)
+	rows, err := this.QueryNoConn(conn, s, args...)
 	if err != nil {
 		return result, err
 	}
@@ -279,16 +280,16 @@ func (this *Driver) QueryRowNoConn(s string, args ...interface{}) (map[string]st
 }
 
 func (this *Driver) Exec(sql string, args ...interface{}) (sql.Result, error) {
-	this.Conn()
-	return this.ExecNoConn(sql, args...)
+	return this.ExecNoConn(this.Conn, sql, args...)
 }
 
-func (this *Driver) ExecNoConn(sql string, args ...interface{}) (sql.Result, error) {
+func (this *Driver) ExecNoConn(conn func(), sql string, args ...interface{}) (sql.Result, error) {
 	defer this.Reset()
 	aolog.InfoTag(this, sql, args, this.dbCache)
 	if this.dbCache != nil {
 		this.dbCache.DelCache(strings.ToLower(this.TabPrifix + this.TabName))
 	}
+	conn()
 	stmt, err := this.db.Prepare(sql)
 	if err != nil {
 		return nil, err
@@ -298,8 +299,6 @@ func (this *Driver) ExecNoConn(sql string, args ...interface{}) (sql.Result, err
 }
 
 func (this *Driver) Insert(d DriverInterface, values map[string]interface{}) (int64, error) {
-	d.Conn()
-	defer d.Close()
 	var fm, vm string
 	val := []interface{}{}
 	for k, v := range values {
@@ -312,7 +311,7 @@ func (this *Driver) Insert(d DriverInterface, values map[string]interface{}) (in
 		val = append(val, v)
 	}
 	sql := "insert into " + this.getTabName() + " (" + fm + ") VALUES (" + vm + ")"
-	result, err := d.ExecNoConn(sql, val...)
+	result, err := d.ExecNoConn(d.Conn, sql, val...)
 	if err != nil {
 		return 0, err
 	}
@@ -320,8 +319,6 @@ func (this *Driver) Insert(d DriverInterface, values map[string]interface{}) (in
 }
 
 func (this *Driver) Update(d DriverInterface, values map[string]interface{}) (int64, error) {
-	d.Conn()
-	defer d.Close()
 	u := ""
 	val := []interface{}{}
 	for k, v := range values {
@@ -333,7 +330,7 @@ func (this *Driver) Update(d DriverInterface, values map[string]interface{}) (in
 	}
 	sql := "update " + this.getTabName() + " set " + u
 	sql, val = this.addWhere(sql, val)
-	result, err := d.ExecNoConn(sql, val...)
+	result, err := d.ExecNoConn(d.Conn, sql, val...)
 	if err != nil {
 		return 0, err
 	}
@@ -341,12 +338,10 @@ func (this *Driver) Update(d DriverInterface, values map[string]interface{}) (in
 }
 
 func (this *Driver) Delete(d DriverInterface) (int64, error) {
-	d.Conn()
-	defer d.Close()
 	val := []interface{}{}
 	sql := "delete from " + this.getTabName()
 	sql, val = this.addWhere(sql, val)
-	result, err := d.ExecNoConn(sql, val...)
+	result, err := d.ExecNoConn(d.Conn, sql, val...)
 	if err != nil {
 		return 0, err
 	}
@@ -354,23 +349,19 @@ func (this *Driver) Delete(d DriverInterface) (int64, error) {
 }
 
 func (this *Driver) Find(d DriverInterface) (map[string]string, error) {
-	d.Conn()
-	defer d.Close()
 	var args []interface{}
 	sql := this.initSelect()
 	sql, args = this.addWhere(sql, []interface{}{})
-	return d.QueryRowNoConn(sql, args...)
+	return d.QueryRowNoConn(d.Conn, sql, args...)
 
 }
 
 func (this *Driver) Total(d DriverInterface) (int, error) {
-	d.Conn()
-	defer d.Close()
 	var args []interface{}
 	this.Field("count(*) as c")
 	sql := this.initSelect()
 	sql, args = this.addWhere(sql, []interface{}{})
-	row, err := d.QueryRowNoConn(sql, args...)
+	row, err := d.QueryRowNoConn(d.Conn, sql, args...)
 	if err != nil {
 		return 0, nil
 	}
@@ -378,8 +369,7 @@ func (this *Driver) Total(d DriverInterface) (int, error) {
 }
 
 func (this *Driver) Select(d DriverInterface) ([]map[string]string, error) {
-	d.Conn()
-	defer d.Close()
+
 	var args []interface{}
 	sql := this.initSelect()
 	sql, args = this.addWhere(sql, []interface{}{})
@@ -387,7 +377,7 @@ func (this *Driver) Select(d DriverInterface) ([]map[string]string, error) {
 	sql = this.addLimit(sql)
 	sql = this.addGroup(sql)
 	sql = this.addHaving(sql)
-	return d.QueryNoConn(sql, args...)
+	return d.QueryNoConn(d.Conn, sql, args...)
 
 }
 

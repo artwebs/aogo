@@ -18,12 +18,12 @@ type Postgresql struct {
 	Driver
 }
 
-func (this *Postgresql) QueryRowNoConn(s string, args ...interface{}) (map[string]string, error) {
+func (this *Postgresql) QueryRowNoConn(conn func(), s string, args ...interface{}) (map[string]string, error) {
 	defer this.Reset()
 	this.limit = "1"
 	var result map[string]string
 	s = this.addLimit(s)
-	rows, err := this.QueryNoConn(s, args...)
+	rows, err := this.QueryNoConn(conn, s, args...)
 	aolog.InfoTag(this, rows)
 	if err != nil {
 		aolog.InfoTag(this, err)
@@ -38,12 +38,12 @@ func (this *Postgresql) QueryRowNoConn(s string, args ...interface{}) (map[strin
 
 }
 
-func (this *Postgresql) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
-	return this.Driver.QueryNoConn(this.toSql(s, args...), args...)
+func (this *Postgresql) QueryNoConn(conn func(), s string, args ...interface{}) ([]map[string]string, error) {
+	return this.Driver.QueryNoConn(conn, this.toSql(s, args...), args...)
 }
 
-func (this *Postgresql) ExecNoConn(s string, args ...interface{}) (sql.Result, error) {
-	return this.Driver.ExecNoConn(this.toSql(s, args...), args...)
+func (this *Postgresql) ExecNoConn(conn func(), s string, args ...interface{}) (sql.Result, error) {
+	return this.Driver.ExecNoConn(conn, this.toSql(s, args...), args...)
 }
 
 func (this *Postgresql) toSql(s string, args ...interface{}) string {

@@ -67,16 +67,16 @@ func (this *Model) Query(s string, args ...interface{}) ([]map[string]string, er
 	return this.Drv.Query(s, args...)
 }
 
-func (this *Model) QueryNoConn(s string, args ...interface{}) ([]map[string]string, error) {
-	return this.Drv.QueryNoConn(s, args...)
+func (this *Model) QueryNoConn(conn func(), s string, args ...interface{}) ([]map[string]string, error) {
+	return this.Drv.QueryNoConn(conn, s, args...)
 }
 
 func (this *Model) QueryRow(s string, args ...interface{}) (map[string]string, error) {
 	return this.Drv.QueryRow(s, args...)
 }
 
-func (this *Model) QueryRowNoConn(s string, args ...interface{}) (map[string]string, error) {
-	return this.Drv.QueryRowNoConn(s, args...)
+func (this *Model) QueryRowNoConn(conn func(), s string, args ...interface{}) (map[string]string, error) {
+	return this.Drv.QueryRowNoConn(conn, s, args...)
 
 }
 
@@ -84,8 +84,8 @@ func (this *Model) Exec(sql string, args ...interface{}) (sql.Result, error) {
 	return this.Drv.Exec(sql, args...)
 }
 
-func (this *Model) ExecNoConn(sql string, args ...interface{}) (sql.Result, error) {
-	return this.Drv.ExecNoConn(sql, args...)
+func (this *Model) ExecNoConn(conn func(), sql string, args ...interface{}) (sql.Result, error) {
+	return this.Drv.ExecNoConn(conn, sql, args...)
 }
 
 func (this *Model) Insert(values map[string]interface{}) (int64, error) {
