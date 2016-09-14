@@ -4,11 +4,11 @@ import (
 	// "fmt"
 	"net/http"
 	"reflect"
+	"time"
 	// "regexp"
 	"strings"
 
 	"github.com/artwebs/aogo/log"
-	"github.com/artwebs/aogo/utils"
 )
 
 type ControllerRegistor struct {
@@ -21,21 +21,28 @@ func NewControllerRegistor() *ControllerRegistor {
 }
 
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	stime := time.Now()
+
 	url := r.URL.String()
-	ip, port, _ := utils.HttpClientIP(r)
-	log.InfoTag(this, ip, port, r.Header.Get("X-Real-IP"), url)
+	// ip, port, _ := utils.HttpClientIP(r)
+
 	if url == "/favicon.ico" {
 		http.ServeFile(w, r, "./favicon.ico")
 		return
 	}
+	defer func() {
 
+	}()
 	urlarr := strings.Split(strings.Trim(strings.Split(url, "?")[0], "/"), "/")
 	data, handler := this.tree.FindRouter(strings.Split(url, "?")[0])
 	if handler != nil {
 		this.doController(data, urlarr, handler, w, r)
+		etime := time.Now()
+		log.InfoTag(this, stime.Sub(etime), r.Header.Get("X-Real-IP"), url)
 		return
 	}
-
+	etime := time.Now()
+	log.InfoTag(this, stime.Sub(etime), r.Header.Get("X-Real-IP"), url)
 	log.ErrorTag(this, url+" do not find")
 
 }
