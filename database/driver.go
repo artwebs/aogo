@@ -22,17 +22,17 @@ func Register(name string, d DriverInterface) {
 }
 
 func Drivers(name string) DriverInterface {
-	// if drv, ok := drivers[name]; ok {
-	// 	return drv
-	// }
-	switch name {
-	case "mysql":
-		return &Mysql{}
-	case "postgres":
-		return &Postgresql{}
-	default:
-
+	if drv, ok := drivers[name]; ok {
+		return drv
 	}
+	// switch name {
+	// case "mysql":
+	// 	return &Mysql{}
+	// case "postgres":
+	// 	return &Postgresql{}
+	// default:
+	//
+	// }
 	return nil
 }
 
@@ -119,13 +119,13 @@ func (this *Driver) Conn() {
 }
 
 func (this *Driver) Close() {
-	if this.db != nil {
-		this.db.Close()
-	}
+	// if this.db != nil {
+	// 	this.db.Close()
+	// }
 
-	if this.dbCache != nil {
-		this.dbCache.Close()
-	}
+	// if this.dbCache != nil {
+	// 	this.dbCache.Close()
+	// }
 }
 
 func (this *Driver) getTabName() string {

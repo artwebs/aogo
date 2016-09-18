@@ -28,6 +28,7 @@ type Context struct {
 	Data           map[string]interface{}
 	UrlKey, UrlVal []string
 	session        *Session
+	Url            string
 }
 
 type ControllerInterface interface {
@@ -51,6 +52,7 @@ func (this *Context) Init(w http.ResponseWriter, r *http.Request, ctl Controller
 	this.Fun = fun
 	this.w = w
 	this.r = r
+	this.Url = r.URL.String()
 	this.Data = make(map[string]interface{})
 	this.Form = make(map[string]interface{})
 	this.UrlVal = data[:]

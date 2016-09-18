@@ -10,7 +10,12 @@ type Memcache struct {
 	mcObj *memcache.Client
 }
 
+func init() {
+	RegisterDBCache("memcache", &Memcache{})
+}
+
 func (this *Memcache) Conn() error {
+	this.Cstr = dbcachecstr
 	if this.mcObj == nil {
 		this.mcObj = memcache.New(this.Cstr)
 	}
