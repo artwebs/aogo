@@ -22,17 +22,17 @@ func Register(name string, d DriverInterface) {
 }
 
 func Drivers(name string) DriverInterface {
-	if drv, ok := drivers[name]; ok {
-		return drv
-	}
-	// switch name {
-	// case "mysql":
-	// 	return &Mysql{}
-	// case "postgres":
-	// 	return &Postgresql{}
-	// default:
-	//
+	// if drv, ok := drivers[name]; ok {
+	// 	return drv
 	// }
+	switch name {
+	case "mysql":
+		return &Mysql{}
+	case "postgres":
+		return &Postgresql{}
+	default:
+
+	}
 	return nil
 }
 
@@ -119,13 +119,13 @@ func (this *Driver) Conn() {
 }
 
 func (this *Driver) Close() {
-	// if this.db != nil {
-	// 	this.db.Close()
-	// }
+	if this.db != nil {
+		this.db.Close()
+	}
 
-	// if this.dbCache != nil {
-	// 	this.dbCache.Close()
-	// }
+	if this.dbCache != nil {
+		this.dbCache.Close()
+	}
 }
 
 func (this *Driver) getTabName() string {
@@ -164,7 +164,7 @@ func (this *Driver) addGroup(sql string) string {
 }
 
 func (this *Driver) addHaving(sql string) string {
-	if this.group != "" && !strings.Contains(strings.ToLower(sql), " having ") {
+	if this.having != "" && !strings.Contains(strings.ToLower(sql), " having ") {
 		sql += " having " + this.having
 	}
 	return sql
@@ -352,6 +352,10 @@ func (this *Driver) Find(d DriverInterface) (map[string]string, error) {
 	var args []interface{}
 	sql := this.initSelect()
 	sql, args = this.addWhere(sql, []interface{}{})
+	sql = this.addOrder(sql)
+	sql = this.addLimit(sql)
+	sql = this.addGroup(sql)
+	sql = this.addHaving(sql)
 	return d.QueryRowNoConn(d.Conn, sql, args...)
 
 }

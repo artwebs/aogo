@@ -10,14 +10,8 @@ type RedisCache struct {
 	client *redis.Client
 }
 
-func init() {
-	RegisterDBCache("redis", &RedisCache{})
-}
-
 func (this *RedisCache) Conn() error {
-	this.Cstr = dbcachecstr
 	var err error
-
 	if this.client == nil {
 		this.client = &redis.Client{Addr: this.Cstr}
 	}

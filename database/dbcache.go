@@ -9,29 +9,24 @@ type DBCache interface {
 	Close() error
 }
 
-var dbcaches = make(map[string]DBCache)
-var dbcachecstr string
-
-func RegisterDBCache(name string, d DBCache) {
-	dbcaches[name] = d
-}
-
 func OpenDBCache(name, cstr string) DBCache {
-	dbcachecstr = cstr
-	// var val DBCache
-	// switch name {
-	// case "memcache":
-	// 	val = &Memcache{Cstr: cstr}
-	// 	break
-	// case "redis":
-	// 	val = &RedisCache{Cstr: cstr}
-	// 	break
-	// default:
-	// }
-
-	if drv, ok := dbcaches[name]; ok {
-		return drv
+	var val DBCache
+	switch name {
+	case "memcache":
+		val = &Memcache{Cstr: cstr}
+		break
+	case "redis":
+		val = &RedisCache{Cstr: cstr}
+		break
+	default:
 	}
+	if val != nil {
+		return val
+	}
+
+	// if drv, ok := dbcaches[name]; ok {
+	// 	return drv
+	// }
 	return nil
 }
 
