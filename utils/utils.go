@@ -300,3 +300,11 @@ func MapToString(data map[string]interface{}) (string, error) {
 	}
 	return string(rbyte), nil
 }
+
+func MD5(str string) string {
+	h := md5.New()
+	h.Write([]byte(str)) // 需要加密的字符串为 123456
+	cipherStr := h.Sum(nil)
+	rs := hex.EncodeToString(cipherStr)
+	return rs
+}

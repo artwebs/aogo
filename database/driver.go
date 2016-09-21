@@ -244,6 +244,7 @@ func (this *Driver) QueryNoConn(conn func(), s string, args ...interface{}) ([]m
 		}
 		result = append(result, row)
 	}
+	rows.Close()
 	if this.dbCache != nil {
 		// aolog.InfoTag(this, " save "+this.cacheKey)
 		rbyte, err := json.Marshal(result)
@@ -418,8 +419,9 @@ func (this *Driver) Field(fields ...string) DriverInterface {
 
 func (this *Driver) getCacheName(s string, args ...interface{}) string {
 	jbyte, _ := json.Marshal(args)
-	return base64.StdEncoding.EncodeToString([]byte(this.DBPrifix + " DataBase " + s + string(jbyte)))
+	// return base64.StdEncoding.EncodeToString([]byte(this.DBPrifix + " DataBase " + s + string(jbyte)))
 	// return this.DBPrifix + " DataBase " + s + string(jbyte)
+	return utils.MD5(s + string(jbyte))
 }
 
 func (this *Driver) ClearCache(args ...string) {
