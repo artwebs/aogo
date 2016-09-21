@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/md5"
 	crypto_rand "crypto/rand"
+	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -307,4 +309,14 @@ func MD5(str string) string {
 	cipherStr := h.Sum(nil)
 	rs := hex.EncodeToString(cipherStr)
 	return rs
+}
+
+func GetBytes(key interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(key)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
