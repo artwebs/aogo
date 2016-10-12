@@ -83,6 +83,14 @@ func (this *Controller) WillDid(ctx *Context) bool {
 	return true
 }
 
+func (this *Context) GetRequst() *http.Request {
+	return this.r
+}
+
+func (this *Context) GetRespone() http.ResponseWriter {
+	return this.w
+}
+
 func (this *Context) SetUrl(arr []string) {
 	this.UrlKey = arr[:]
 
@@ -94,6 +102,10 @@ func (this *Context) Redirect(url string) {
 
 func (this *Context) Header(code int) {
 	this.w.WriteHeader(code)
+}
+
+func (this *Context) SetHeader(key, value string) {
+	this.w.Header().Set(key, value)
 }
 
 func (this *Context) WriteString(str string) {
