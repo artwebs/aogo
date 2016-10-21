@@ -47,6 +47,16 @@ func (this *Cache) Put(key string, val []byte, timeout int64) (bool, error) {
 	return flag, err
 }
 
+func (this *Cache) Set(key string, val []byte) (bool, error) {
+	var err error
+	flag := false
+	err = this.client.Set(key, val)
+	if err != nil {
+		return flag, err
+	}
+	return flag, err
+}
+
 func (this *Cache) Delete(key string) (bool, error) {
 	this.client.Del(key)
 	return this.client.Del(key)
