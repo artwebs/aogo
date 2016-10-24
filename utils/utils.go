@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/md5"
 	crypto_rand "crypto/rand"
@@ -87,6 +88,29 @@ func FileCopy(src, des string) (w int64, err error) {
 	defer desFile.Close()
 
 	return io.Copy(desFile, srcFile)
+}
+
+func FileRead(path string) ([]byte, error) {
+	fi, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer fi.Close()
+	fd, err := ioutil.ReadAll(fi)
+	return fd, nil
+}
+
+//flag os.O_CREATE|os.O_APPEND|os.O_RDWR
+func FileWrite(path string, flag int, data []byte) error {
+	f, err := os.OpenFile(path, flag, 0660)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	w.Write(data)
+	w.Flush()
+	return nil
 }
 
 func StringSearch(s, ex string) (group []string) {
