@@ -121,10 +121,12 @@ func (this *Driver) Conn() {
 func (this *Driver) Close() {
 	if this.db != nil {
 		this.db.Close()
+		this.db = nil
 	}
 
 	if this.dbCache != nil {
 		this.dbCache.Close()
+		this.dbCache = nil
 	}
 }
 
