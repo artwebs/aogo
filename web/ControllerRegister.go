@@ -39,7 +39,8 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 	if handler != nil {
 		this.doController(data, urlarr, handler, w, r)
 		etime := time.Now()
-		log.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), url)
+		_, port, _ := utils.HttpClientIP(r)
+		log.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), port, url)
 		return
 	}
 	etime := time.Now()
