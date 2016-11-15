@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/utils"
 )
 
 type ControllerRegistor struct {
@@ -42,7 +43,8 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 	etime := time.Now()
-	log.InfoTag(this, stime.Sub(etime), r.Header.Get("X-Real-IP"), url)
+	_, port, _ := utils.HttpClientIP(r)
+	log.InfoTag(this, stime.Sub(etime), r.Header.Get("X-Real-IP"), port, url)
 	log.ErrorTag(this, url+" do not find")
 
 }
