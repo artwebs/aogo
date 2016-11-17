@@ -40,12 +40,12 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		this.doController(data, urlarr, handler, w, r)
 		etime := time.Now()
 		_, port, _ := utils.HttpClientIP(r)
-		log.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), port, url)
+		log.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), "[", port, "]", url)
 		return
 	}
 	etime := time.Now()
 	_, port, _ := utils.HttpClientIP(r)
-	log.InfoTag(this, stime.Sub(etime), r.Header.Get("X-Real-IP"), port, url)
+	log.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), "[", port, "]", url)
 	log.ErrorTag(this, url+" do not find")
 
 }
