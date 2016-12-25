@@ -22,6 +22,11 @@ func NewControllerRegistor() *ControllerRegistor {
 }
 
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error(err)
+		}
+	}()
 	stime := time.Now()
 
 	url := r.URL.String()
