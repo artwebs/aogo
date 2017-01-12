@@ -39,11 +39,17 @@ func Run() {
 		HandleFile(item+"/images", ViewsPath)
 	}
 	register.tree.PrintTree("")
+
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second, WriteTimeout: 5 * time.Second}
 	aolog.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
 	err := conn.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
+	}
+	if Debug == 1 {
+		aolog.SetLevel(aolog.LevelDebug)
+	} else {
+		aolog.SetLevel(aolog.LevelError)
 	}
 
 }

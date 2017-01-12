@@ -285,11 +285,14 @@ func UrlDecode(s string) (string, error) {
 	return url.QueryUnescape(s)
 }
 
-func HttpGet(url string) string {
-	response, _ := http.Get(url)
+func HttpGet(url string) (string, error) {
+	response, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
 	defer response.Body.Close()
 	body, _ := ioutil.ReadAll(response.Body)
-	return string(body)
+	return string(body), nil
 }
 
 func HttpClientIP(r *http.Request) (string, string, error) {

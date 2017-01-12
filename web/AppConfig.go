@@ -16,6 +16,7 @@ var (
 	TemplateExt = "html"
 	UploadPath  = "files"
 	RouterParam = 0
+	Debug       = 1
 )
 
 type AppConfig struct {
@@ -41,6 +42,7 @@ func InitAppConfig() (*AppConfig, error) {
 		TemplateExt = conf.String("TemplateExt", "html")
 		UploadPath = conf.String("TemplateExt", "files")
 		RouterParam = conf.Int("RouterParam", 0)
+		Debug = conf.Int("Debug", 1)
 	}
 	return conf, nil
 
