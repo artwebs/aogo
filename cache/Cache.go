@@ -1,8 +1,6 @@
 package cache
 
 import (
-	"sync"
-
 	"github.com/artwebs/aogo/log"
 	"github.com/artwebs/aogo/utils"
 	_ "github.com/astaxie/beego/cache/memcache"
@@ -12,7 +10,7 @@ import (
 	// "log"
 )
 
-var redisLockobj *sync.RWMutex
+// var redisLockobj *sync.RWMutex
 
 type Cache struct {
 	name   string
@@ -24,17 +22,17 @@ func NewCache(name, config string) (*Cache, error) {
 	if err != nil {
 		return nil, err
 	}
-	if redisLockobj == nil {
-		redisLockobj = new(sync.RWMutex)
-	}
+	// if redisLockobj == nil {
+	// 	redisLockobj = new(sync.RWMutex)
+	// }
 	return &Cache{name: name, client: &redis.Client{Addr: data["conn"].(string)}}, nil
 
 }
 
 func (this *Cache) Get(key string) []byte {
-	redisLockobj.RLock()
+	// redisLockobj.RLock()
 	rs, err := this.client.Get(key)
-	redisLockobj.RUnlock()
+	// redisLockobj.RUnlock()
 	if err != nil {
 		log.ErrorTag(this, err)
 		return nil
@@ -45,15 +43,15 @@ func (this *Cache) Get(key string) []byte {
 func (this *Cache) Put(key string, val []byte, timeout int64) (bool, error) {
 	var err error
 	flag := false
-	redisLockobj.Lock()
+	// redisLockobj.Lock()
 	err = this.client.Set(key, val)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	if err != nil {
 		return flag, err
 	}
-	redisLockobj.Lock()
+	// redisLockobj.Lock()
 	flag, err = this.client.Expire(key, timeout)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	if err != nil {
 		return flag, err
 	}
@@ -63,9 +61,9 @@ func (this *Cache) Put(key string, val []byte, timeout int64) (bool, error) {
 func (this *Cache) Set(key string, val []byte) (bool, error) {
 	var err error
 	flag := false
-	redisLockobj.Lock()
+	// redisLockobj.Lock()
 	err = this.client.Set(key, val)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	if err != nil {
 		return flag, err
 	}
@@ -73,37 +71,37 @@ func (this *Cache) Set(key string, val []byte) (bool, error) {
 }
 
 func (this *Cache) Delete(key string) (bool, error) {
-	redisLockobj.Lock()
+	// redisLockobj.Lock()
 	rs, err := this.client.Del(key)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	return rs, err
 }
 
 func (this *Cache) Incr(key string) (int64, error) {
-	redisLockobj.Lock()
+	// redisLockobj.Lock()
 	rs, err := this.client.Incr(key)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	return rs, err
 }
 
 func (this *Cache) Decr(key string) (int64, error) {
-	redisLockobj.Lock()
+	// redisLockobj.Lock()
 	rs, err := this.client.Decr(key)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	return rs, err
 }
 
 func (this *Cache) IsExist(key string) (bool, error) {
-	redisLockobj.RLock()
+	// redisLockobj.RLock()
 	flag, err := this.client.Exists(key)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	return flag, err
 }
 
 func (this *Cache) ClearAll() error {
-	redisLockobj.RLock()
+	// redisLockobj.RLock()
 	err := this.client.Flush(false)
-	redisLockobj.Unlock()
+	// redisLockobj.Unlock()
 	return err
 }
 
