@@ -252,3 +252,7 @@ func (this *Context) IsMobile() bool {
 	}
 	return false
 }
+
+func (this *Context) GetUserAgent() string {
+	return this.r.Header.Get("User-Agent")
+}
