@@ -53,6 +53,7 @@ func (this *SecurityAES) DecryptStringWithIV(key, iv, data string) (string, erro
 	if err != nil {
 		return "", err
 	}
+	dataByte = PKCS5UnPadding(dataByte)
 	originalData, err := this.DecryptWithIV([]byte(key), []byte(iv), dataByte)
 	if err == nil {
 		return string(originalData), err

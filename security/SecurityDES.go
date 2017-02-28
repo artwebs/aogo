@@ -74,6 +74,7 @@ func (this *SecurityDES) DecryptIV(key, iv, data []byte) ([]byte, error) {
 		return nil, err
 	}
 	blockMode := cipher.NewCBCDecrypter(block, iv)
+	data = PKCS5UnPadding(data)
 	originalData := make([]byte, len(data))
 	blockMode.CryptBlocks(originalData, data)
 	originalData = PKCS5UnPadding(originalData)
@@ -130,6 +131,7 @@ func (this *SecurityTripleDES) Decrypt(key, data []byte) ([]byte, error) {
 	}
 	blockMode := cipher.NewCBCDecrypter(block, this.GetIV(key, this.ivSize))
 	originalData := make([]byte, len(data))
+	data = PKCS5UnPadding(data)
 	blockMode.CryptBlocks(originalData, data)
 	originalData = ZeroUnPadding(originalData)
 	return originalData, nil
