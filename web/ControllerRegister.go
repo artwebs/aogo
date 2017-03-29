@@ -79,6 +79,9 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 	default:
 		log.ErrorTag(this, h, " do not find")
 	}
-	r.Body.Close()
+	err := r.Body.Close()
+	if err != nil {
+		log.ErrorTag(this, "关闭http response 失败", err)
+	}
 
 }
