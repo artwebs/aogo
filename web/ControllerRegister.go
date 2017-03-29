@@ -56,7 +56,12 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 }
 
 func (this *ControllerRegistor) doController(data, urlarr []string, h interface{}, w http.ResponseWriter, r *http.Request) {
-
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			log.ErrorTag(this, "关闭http response 失败", err)
+		}
+	}()
 	switch handler := h.(type) {
 	case *Handler:
 		reflectVal := reflect.ValueOf(handler.controller)
@@ -78,10 +83,6 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 		break
 	default:
 		log.ErrorTag(this, h, " do not find")
-	}
-	err := r.Body.Close()
-	if err != nil {
-		log.ErrorTag(this, "关闭http response 失败", err)
 	}
 
 }
