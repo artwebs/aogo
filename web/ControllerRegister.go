@@ -79,5 +79,6 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 	default:
 		log.ErrorTag(this, h, " do not find")
 	}
+	r.Body.Close()
 
 }
