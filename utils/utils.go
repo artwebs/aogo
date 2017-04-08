@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	crypto_rand "crypto/rand"
+	"crypto/sha1"
 	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
@@ -346,4 +347,21 @@ func GetBytes(key interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func Identity() string {
+	h := sha1.New()
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func FailOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s:%s", err, msg)
+	}
+}
+
+func FailOnErrorTag(tag interface{}, err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s=>%s:%s", Tag(tag), err, msg)
+	}
 }

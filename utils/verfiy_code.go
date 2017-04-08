@@ -384,7 +384,6 @@ func NewLenChars(length int, chars []byte) string {
 			}
 		}
 	}
-	panic("unreachable")
 }
 
 func CreateImage() (code []byte, image *Image) {
