@@ -1,7 +1,9 @@
 package queue
 
 import (
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/artwebs/amqp"
 	"github.com/artwebs/aogo/log"
@@ -28,6 +30,12 @@ func (this *RabbitMQ) SetType(t string) *RabbitMQ {
 }
 
 func (this *RabbitMQ) Open() {
+	defer func() {
+		if err := recover(); err != nil {
+			this.Close()
+			log.Error("Open", err)
+		}
+	}()
 	if this.qtype == "" {
 		this.qtype = "direct"
 	}
@@ -43,10 +51,12 @@ func (this *RabbitMQ) Open() {
 
 func (this *RabbitMQ) Close() {
 	if this.conn != nil {
-		defer this.conn.Close()
+		this.conn.Close()
+		this.conn = nil
 	}
 	if this.ch != nil {
-		defer this.ch.Close()
+		this.ch.Close()
+		this.ch = nil
 	}
 }
 
@@ -55,7 +65,6 @@ func (this *RabbitMQ) Send(key, tp, msg string) {
 		if err := recover(); err != nil {
 			this.Close()
 			log.Error("Send", err)
-
 		}
 	}()
 	this.Open()
@@ -99,7 +108,8 @@ func (this *RabbitMQ) Revice(f func(d amqp.Delivery)) {
 	); err != nil {
 		utils.FailOnError(err, "Exchange Declare")
 	}
-	queue := utils.Identity()
+
+	queue := utils.Identity() + strconv.FormatInt(time.Now().UnixNano(), 10)
 	q, err := this.ch.QueueDeclare(
 		queue,
 		true,
@@ -122,9 +132,7 @@ func (this *RabbitMQ) Revice(f func(d amqp.Delivery)) {
 
 	go func() {
 		for d := range msgs {
-			if d.RoutingKey == this.routerkey {
-				f(d)
-			}
+			f(d)
 		}
 	}()
 	utils.FailOnError(err, "Waiting for messages. To exit press CTRL+C")

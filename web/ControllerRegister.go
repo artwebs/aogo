@@ -36,9 +36,6 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		http.ServeFile(w, r, "./favicon.ico")
 		return
 	}
-	defer func() {
-
-	}()
 	urlarr := strings.Split(strings.Trim(strings.Split(url, "?")[0], "/"), "/")
 	data, handler := this.tree.FindRouter(strings.Split(url, "?")[0])
 	if handler != nil {

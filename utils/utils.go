@@ -356,12 +356,12 @@ func Identity() string {
 
 func FailOnError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("%s:%s", err, msg)
+		log.Panic(err, msg)
 	}
 }
 
 func FailOnErrorTag(tag interface{}, err error, msg string) {
 	if err != nil {
-		log.Fatalf("%s=>%s:%s", Tag(tag), err, msg)
+		log.Panic(Tag(tag), err, msg)
 	}
 }
