@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/utils"
 	"github.com/hoisie/redis"
 )
 
@@ -74,6 +75,58 @@ func (this *RedisCache) DelCache(table string) error {
 	this.client.Del(table)
 
 	return err
+}
+
+func (this *RedisCache) Publish(ch, val string) error {
+	var err error
+	err = this.Conn()
+	if err != nil {
+		return err
+	}
+	this.client.Publish(ch, []byte(val))
+	return nil
+}
+
+func (this *RedisCache) Receive(sub, unsub, psub, punsub string, f func(m redis.Message)) {
+	var err error
+	err = this.Conn()
+	if err != nil {
+		println("连接错误")
+	}
+	subscribe := make(chan string, 1)
+	unsubscribe := make(chan string, 0)
+	psubscribe := make(chan string, 0)
+	punsubscribe := make(chan string, 0)
+	messages := make(chan redis.Message, 0)
+	go this.client.Subscribe(subscribe, unsubscribe, psubscribe, punsubscribe, messages)
+
+	if sub != "" {
+		subscribe <- sub
+	}
+	if unsub != "" {
+		unsubscribe <- unsub
+	}
+	if psub != "" {
+		psubscribe <- psub
+	}
+	if punsub != "" {
+		punsubscribe <- punsub
+	}
+
+	forever := make(chan bool)
+
+	go func() {
+		for d := range messages {
+			f(d)
+		}
+	}()
+	utils.FailOnError(err, "Waiting for messages. To exit press CTRL+C")
+	<-forever
+	close(subscribe)
+	close(unsubscribe)
+	close(psubscribe)
+	close(punsubscribe)
+	close(messages)
 }
 
 func (this *RedisCache) Close() error {

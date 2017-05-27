@@ -17,12 +17,12 @@ func NewSecurityDES() *SecurityDES {
 }
 
 func (this *SecurityDES) EncryptString(key, data string) (string, error) {
-	return this.EncryptIVString(key, key, data)
+	return this.EncryptStringWithIV(key, key, data)
 
 }
 
-func (this *SecurityDES) EncryptIVString(key, iv, data string) (string, error) {
-	crypted, err := this.EncryptIV([]byte(key), []byte(iv), []byte(data))
+func (this *SecurityDES) EncryptStringWithIV(key, iv, data string) (string, error) {
+	crypted, err := this.EncryptWithIV([]byte(key), []byte(iv), []byte(data))
 	if err == nil {
 		return base64.StdEncoding.EncodeToString(crypted), nil
 	}
@@ -31,10 +31,10 @@ func (this *SecurityDES) EncryptIVString(key, iv, data string) (string, error) {
 }
 
 func (this *SecurityDES) Encrypt(key, data []byte) ([]byte, error) {
-	return this.EncryptIV(key, key, data)
+	return this.EncryptWithIV(key, key, data)
 }
 
-func (this *SecurityDES) EncryptIV(key, iv, data []byte) ([]byte, error) {
+func (this *SecurityDES) EncryptWithIV(key, iv, data []byte) ([]byte, error) {
 	key = this.GetKey(key, this.keySize)
 	block, err := des.NewCipher(key)
 	if err != nil {
@@ -48,15 +48,15 @@ func (this *SecurityDES) EncryptIV(key, iv, data []byte) ([]byte, error) {
 }
 
 func (this *SecurityDES) DecryptString(key, data string) (string, error) {
-	return this.DecryptIVString(key, key, data)
+	return this.DecryptStringWithIV(key, key, data)
 }
 
-func (this *SecurityDES) DecryptIVString(key, iv, data string) (string, error) {
+func (this *SecurityDES) DecryptStringWithIV(key, iv, data string) (string, error) {
 	dataByte, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
 	}
-	originalData, err := this.DecryptIV([]byte(key), []byte(iv), dataByte)
+	originalData, err := this.DecryptWithIV([]byte(key), []byte(iv), dataByte)
 	if err == nil {
 		return string(originalData), err
 	}
@@ -64,17 +64,16 @@ func (this *SecurityDES) DecryptIVString(key, iv, data string) (string, error) {
 }
 
 func (this *SecurityDES) Decrypt(key, data []byte) ([]byte, error) {
-	return this.DecryptIV(key, key, data)
+	return this.DecryptWithIV(key, key, data)
 }
 
-func (this *SecurityDES) DecryptIV(key, iv, data []byte) ([]byte, error) {
+func (this *SecurityDES) DecryptWithIV(key, iv, data []byte) ([]byte, error) {
 	key = this.GetKey(key, this.keySize)
 	block, err := des.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 	blockMode := cipher.NewCBCDecrypter(block, iv)
-	data = PKCS5UnPadding(data)
 	originalData := make([]byte, len(data))
 	blockMode.CryptBlocks(originalData, data)
 	originalData = PKCS5UnPadding(originalData)
@@ -90,7 +89,12 @@ func NewSecurityTripleDES() *SecurityTripleDES {
 }
 
 func (this *SecurityTripleDES) EncryptString(key, data string) (string, error) {
-	crypted, err := this.Encrypt([]byte(key), []byte(data))
+
+	return this.EncryptStringWithIV(key, key, data)
+}
+
+func (this *SecurityTripleDES) EncryptStringWithIV(key, iv, data string) (string, error) {
+	crypted, err := this.EncryptWithIV([]byte(key), []byte(iv), []byte(data))
 	if err == nil {
 		return base64.StdEncoding.EncodeToString(crypted), err
 	}
@@ -98,25 +102,33 @@ func (this *SecurityTripleDES) EncryptString(key, data string) (string, error) {
 }
 
 func (this *SecurityTripleDES) Encrypt(key, data []byte) ([]byte, error) {
+	return this.EncryptWithIV(key, key, data)
+}
+
+func (this *SecurityTripleDES) EncryptWithIV(key, iv, data []byte) ([]byte, error) {
 	key = this.GetKey(key, this.keySize)
 	block, err := des.NewTripleDESCipher(key)
 	if err != nil {
 		return nil, err
 	}
 	originalData := PKCS5Padding(data, block.BlockSize())
-	blockMode := cipher.NewCBCEncrypter(block, this.GetIV(key, this.ivSize))
+	blockMode := cipher.NewCBCEncrypter(block, this.GetIV(iv, this.ivSize))
 	crypted := make([]byte, len(originalData))
 	blockMode.CryptBlocks(crypted, originalData)
 	return crypted, nil
 }
 
 func (this *SecurityTripleDES) DecryptString(key, data string) (string, error) {
+	return this.DecryptStringWithIV(key, key, data)
+}
+
+func (this *SecurityTripleDES) DecryptStringWithIV(key, iv, data string) (string, error) {
 
 	dataByte, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
 	}
-	originalData, err := this.Decrypt([]byte(key), dataByte)
+	originalData, err := this.DecryptWithIV([]byte(key), []byte(iv), dataByte)
 	if err == nil {
 		return string(originalData), err
 	}
@@ -124,14 +136,17 @@ func (this *SecurityTripleDES) DecryptString(key, data string) (string, error) {
 }
 
 func (this *SecurityTripleDES) Decrypt(key, data []byte) ([]byte, error) {
+	return this.DecryptWithIV(key, key, data)
+}
+
+func (this *SecurityTripleDES) DecryptWithIV(key, iv, data []byte) ([]byte, error) {
 	key = this.GetKey(key, this.keySize)
 	block, err := des.NewTripleDESCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	blockMode := cipher.NewCBCDecrypter(block, this.GetIV(key, this.ivSize))
+	blockMode := cipher.NewCBCDecrypter(block, this.GetIV(iv, this.ivSize))
 	originalData := make([]byte, len(data))
-	data = PKCS5UnPadding(data)
 	blockMode.CryptBlocks(originalData, data)
 	originalData = ZeroUnPadding(originalData)
 	return originalData, nil
