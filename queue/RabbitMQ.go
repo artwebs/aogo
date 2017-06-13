@@ -13,14 +13,14 @@ import (
 type RabbitMQ struct {
 	connstr   string
 	exchange  string
-	routerkey string
+	Routerkey string
 	qtype     string //direct fanout topic
 	conn      *amqp.Connection
 	ch        *amqp.Channel
 }
 
 func InitQueue(connstr, exchange, routerkey string) *RabbitMQ {
-	var q = &RabbitMQ{connstr: connstr, exchange: exchange, routerkey: routerkey}
+	var q = &RabbitMQ{connstr: connstr, exchange: exchange, Routerkey: routerkey}
 	return q
 }
 
@@ -61,6 +61,15 @@ func (this *RabbitMQ) Close() {
 }
 
 func (this *RabbitMQ) Send(key, tp, msg string) {
+	this.Publish(this.Routerkey+"."+key, amqp.Publishing{
+		ContentType: "text/plain",
+		Type:        tp,
+		Body:        []byte(msg),
+	})
+
+}
+
+func (this *RabbitMQ) Publish(key string, obj amqp.Publishing) {
 	defer func() {
 		if err := recover(); err != nil {
 			this.Close()
@@ -68,7 +77,6 @@ func (this *RabbitMQ) Send(key, tp, msg string) {
 		}
 	}()
 	this.Open()
-
 	if err := this.ch.ExchangeDeclare(
 		this.exchange, // name
 		this.qtype,    // type
@@ -80,11 +88,7 @@ func (this *RabbitMQ) Send(key, tp, msg string) {
 	); err != nil {
 		utils.FailOnError(err, "Exchange Declare")
 	}
-	if err := this.ch.Publish(this.exchange, this.routerkey+"."+key, false, false, amqp.Publishing{
-		ContentType: "text/plain",
-		Type:        tp,
-		Body:        []byte(msg),
-	}); err != nil {
+	if err := this.ch.Publish(this.exchange, key, false, false, obj); err != nil {
 		utils.FailOnError(err, "send ok")
 	}
 }
@@ -122,7 +126,7 @@ func (this *RabbitMQ) Revice(f func(d amqp.Delivery)) {
 
 	msgs, err := this.ch.Consume(q.Name, "", true, false, false, false, nil)
 	utils.FailOnError(err, "Failed to register a consumer")
-	err = this.ch.QueueBind(q.Name, this.routerkey, this.exchange, false, nil)
+	err = this.ch.QueueBind(q.Name, this.Routerkey, this.exchange, false, nil)
 	if err != nil {
 		log.Error(this, err)
 		return
@@ -140,7 +144,7 @@ func (this *RabbitMQ) Revice(f func(d amqp.Delivery)) {
 }
 
 func (this *RabbitMQ) Routerkeys() []string {
-	arr := strings.Split(this.routerkey, ".")
+	arr := strings.Split(this.Routerkey, ".")
 	rs := make([]string, len(arr))
 	temp := ""
 	for i, val := range arr {
