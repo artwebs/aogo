@@ -1,4 +1,4 @@
-package websocket
+package ws
 
 import (
 	"log"
@@ -11,11 +11,11 @@ func init() {
 	hub = newHub()
 }
 
-type Delegate interface {
-	RecvMessage(messageType int, messageByte []byte)
+type WebSocketDelegate interface {
+	RecvMessage(c *Client, mType int, mByte []byte)
 }
 
-func AddRouter(pattern string, delegate Delegate) {
+func AddRouter(pattern string, delegate WebSocketDelegate) {
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r, delegate)
 	})
@@ -23,16 +23,16 @@ func AddRouter(pattern string, delegate Delegate) {
 
 func SendMessage(clientid, data string) {
 	for client := range hub.clients {
-		if client.id == clientid {
-			client.send <- []byte(data)
-			return
+		if client.Id == clientid {
+			client.Send <- []byte(data)
 		} else {
-			log.Println(client.id)
+			log.Println(client.Id)
 		}
 	}
 }
 
 func Run(addr string, handler http.Handler) {
+	go hub.run()
 	err := http.ListenAndServe(addr, handler)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

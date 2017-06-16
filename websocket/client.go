@@ -1,4 +1,4 @@
-package websocket
+package ws
 
 import (
 	"log"
@@ -44,11 +44,11 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send     chan []byte
-	id       string
-	login    string
-	index    int
-	delegate Delegate
+	Send     chan []byte
+	Id       string
+	Login    string
+	Index    int
+	Delegate WebSocketDelegate
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -72,9 +72,8 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-
-		if c.delegate != nil {
-			c.delegate.RecvMessage(messageType, message)
+		if c.Delegate != nil {
+			c.Delegate.RecvMessage(c, messageType, message)
 		}
 
 	}
@@ -93,7 +92,7 @@ func (c *Client) writePump() {
 	}()
 	for {
 		select {
-		case message, ok := <-c.send:
+		case message, ok := <-c.Send:
 			// log.Println(c.id, "write=>", string(message))
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
@@ -109,10 +108,10 @@ func (c *Client) writePump() {
 			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
+			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
-				w.Write(<-c.send)
+				w.Write(<-c.Send)
 			}
 
 			if err := w.Close(); err != nil {
@@ -128,15 +127,17 @@ func (c *Client) writePump() {
 }
 
 // serveWs handles websocket requests from the peer.
-func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request, delegate Delegate) {
+func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request, delegate WebSocketDelegate) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), delegate: delegate}
-	// fmt.Println(client)
+	client := &Client{hub: hub, conn: conn, Send: make(chan []byte, 256), Delegate: delegate}
+
+	log.Println(client)
 	client.hub.register <- client
 	go client.writePump()
+
 	client.readPump()
 }
