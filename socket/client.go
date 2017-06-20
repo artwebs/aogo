@@ -2,6 +2,7 @@ package socket
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"time"
 )
@@ -44,9 +45,10 @@ func (c *Client) readPump() {
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	// c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	data := make([]byte, maxMessageSize)
 	for {
+		c.conn.SetReadDeadline(time.Now().Add(pongWait))
 		n, err := c.conn.Read(data)
 		if err != nil {
 			fmt.Printf("read message from lotus failed")
@@ -79,6 +81,7 @@ func (c *Client) writePump() {
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if _, err := c.conn.Write([]byte{}); err != nil {
+				log.Println("ticker error:", err)
 				return
 			}
 		}

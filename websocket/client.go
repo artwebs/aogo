@@ -66,6 +66,7 @@ func (c *Client) readPump() {
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		messageType, message, err := c.conn.ReadMessage()
+		c.conn.SetReadDeadline(time.Now().Add(pongWait))
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				log.Printf("error: %v", err)

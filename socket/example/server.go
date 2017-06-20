@@ -15,5 +15,5 @@ func (this DemoMessage) RecvMessage(c *socket.Client, mByte []byte) {
 }
 
 func main() {
-	socket.Run("tcp", ":8080", &DemoMessage{})
+	socket.Run(":8080", &DemoMessage{})
 }

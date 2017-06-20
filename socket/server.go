@@ -26,10 +26,10 @@ func SendMessage(clientid, data string) {
 	}
 }
 
-func Run(stype, host string, delegate SocketDelegate) {
+func Run(host string, delegate SocketDelegate) {
 	go hub.run()
 	fmt.Printf("Server is ready...\n")
-	l, err := net.Listen(stype, host)
+	l, err := net.Listen("tcp", host)
 	if err != nil {
 		fmt.Printf("Failure to listen: %s\n", err.Error())
 	}
