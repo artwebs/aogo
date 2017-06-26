@@ -3,8 +3,9 @@ package security
 import (
 	"fmt"
 	// "github.com/artwebs/aogo/utils"
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSecurity(t *testing.T) {
@@ -13,11 +14,11 @@ func TestSecurity(t *testing.T) {
 		data := "a12*&1c中文"
 		// key := "Y8gyxetK"
 		// fmt.Println(string(util.RandomBytes(24)))
-		desObj := NewSecurityDES()
-		crypted1, _ := desObj.EncryptString(key, data)
-		fmt.Println(crypted1)
-		fmt.Println(desObj.DecryptString(key, crypted1))
-		So("1", ShouldEqual, "1")
+		// desObj := NewSecurityDES()
+		// crypted1, _ := desObj.EncryptString(key, data)
+		// fmt.Println(crypted1)
+		// fmt.Println(desObj.DecryptString(key, crypted1))
+		// So("1", ShouldEqual, "1")
 
 		des3Obj := NewSecurityTripleDES()
 		crypted2, _ := des3Obj.EncryptString(key, data)
