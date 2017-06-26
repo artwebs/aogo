@@ -16,14 +16,15 @@ type SocketDelegate interface {
 	RecvMessage(c *Client, mByte []byte)
 }
 
-func SendMessage(clientid, data string) {
+func SendMessage(clientid, data string) bool {
 	for client := range hub.clients {
 		if client.Id == clientid {
 			client.Send <- []byte(data)
-		} else {
-			log.Println(client.Id)
+			return true
 		}
 	}
+	log.Println(clientid)
+	return false
 }
 
 func Run(host string, delegate SocketDelegate) {
