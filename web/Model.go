@@ -7,7 +7,7 @@ import (
 	"strings"
 	// "strconv"
 
-	"github.com/artwebs/aogo/database"
+	"github.com/artwebs/aogo/db"
 	aolog "github.com/artwebs/aogo/log"
 )
 

@@ -1,4 +1,4 @@
-package database
+package db
 
 func init() {
 	Register("clickhouse", &Clickhouse{})
