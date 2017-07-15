@@ -4,6 +4,7 @@ import (
 	// "fmt"
 	"net/http"
 	"reflect"
+	"runtime/debug"
 	"time"
 	// "regexp"
 	"strings"
@@ -25,6 +26,7 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error(err)
+			debug.PrintStack()
 		}
 	}()
 	stime := time.Now()
