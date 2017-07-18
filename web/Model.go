@@ -23,7 +23,7 @@ type ModelInterface interface {
 }
 
 type Model struct {
-	Drv database.DriverInterface
+	Drv db.DriverInterface
 }
 
 func (this *Model) SetTabName(name string) {
@@ -50,14 +50,14 @@ func (this *Model) Init(args ...string) {
 
 	CobjName := conf.String("DBCache::name", "")
 	CobjConfig := conf.String("DBCache::config", "")
-	var Cobj database.DBCache
+	var Cobj db.DBCache
 	if CobjName != "" && CobjConfig != "" {
-		Cobj = database.OpenDBCache(CobjName, CobjConfig)
+		Cobj = db.OpenDBCache(CobjName, CobjConfig)
 	}
 	if err != nil {
 		aolog.InfoTag(this, "dataSourceName", dataSourceName)
 	}
-	this.Drv = database.Drivers(driverName)
+	this.Drv = db.Drivers(driverName)
 	this.Drv.Init(driverName, dataSourceName, tabPrifix)
 	this.Drv.SetDBCache(Cobj)
 	this.Drv.SetDBPrifix(dbPrifix)
