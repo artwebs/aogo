@@ -37,6 +37,7 @@ func Table(tb string, args ...string) DriverInterface {
 	}
 	drv := Drivers(driverName)
 	drv.Init(driverName, dataSourceName, tabPrifix)
+	drv.SetTabName(tb)
 	drv.SetDBCache(Cobj)
 	drv.SetDBPrifix(dbPrifix)
 	return drv
