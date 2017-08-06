@@ -47,12 +47,14 @@ func (this *Cache) Put(key string, val []byte, timeout int64) (bool, error) {
 	err = this.client.Set(key, val)
 	// redisLockobj.Unlock()
 	if err != nil {
+		log.ErrorTag(this, err)
 		return flag, err
 	}
 	// redisLockobj.Lock()
 	flag, err = this.client.Expire(key, timeout)
 	// redisLockobj.Unlock()
 	if err != nil {
+		log.ErrorTag(this, err)
 		return flag, err
 	}
 	return flag, err
