@@ -8,7 +8,7 @@ import (
 var hub *Hub
 
 func init() {
-	hub = newHub()
+	hub = NewHub()
 }
 
 type WebSocketDelegate interface {
@@ -17,7 +17,7 @@ type WebSocketDelegate interface {
 
 func AddRouter(pattern string, delegate WebSocketDelegate) {
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r, delegate)
+		ServeWs(hub, w, r, delegate)
 	})
 }
 
@@ -32,7 +32,7 @@ func SendMessage(clientid, data string) {
 }
 
 func Run(addr string, handler http.Handler) {
-	go hub.run()
+	go hub.Run()
 	err := http.ListenAndServe(addr, handler)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

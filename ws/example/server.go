@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/artwebs/aogo/websocket"
+	"github.com/artwebs/aogo/ws"
 )
 
 type DemoMessage struct {
