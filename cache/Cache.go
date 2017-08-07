@@ -14,6 +14,7 @@ import (
 
 type Cache struct {
 	name   string
+	addr   string
 	client *redis.Client
 }
 
@@ -25,12 +26,19 @@ func NewCache(name, config string) (*Cache, error) {
 	// if redisLockobj == nil {
 	// 	redisLockobj = new(sync.RWMutex)
 	// }
-	return &Cache{name: name, client: &redis.Client{Addr: data["conn"].(string)}}, nil
+	return &Cache{name: name, addr: data["conn"].(string)}, nil
 
+}
+
+func (this *Cache) conn() {
+	if this.client == nil {
+		this.client = &redis.Client{Addr: this.addr}
+	}
 }
 
 func (this *Cache) Get(key string) []byte {
 	// redisLockobj.RLock()
+	this.conn()
 	rs, err := this.client.Get(key)
 	// redisLockobj.RUnlock()
 	if err != nil {
@@ -43,6 +51,7 @@ func (this *Cache) Get(key string) []byte {
 func (this *Cache) Put(key string, val []byte, timeout int64) (bool, error) {
 	var err error
 	flag := false
+	this.conn()
 	// redisLockobj.Lock()
 	err = this.client.Set(key, val)
 	// redisLockobj.Unlock()
@@ -61,6 +70,7 @@ func (this *Cache) Put(key string, val []byte, timeout int64) (bool, error) {
 func (this *Cache) Set(key string, val []byte) (bool, error) {
 	var err error
 	flag := false
+	this.conn()
 	// redisLockobj.Lock()
 	err = this.client.Set(key, val)
 	// redisLockobj.Unlock()
@@ -72,6 +82,7 @@ func (this *Cache) Set(key string, val []byte) (bool, error) {
 
 func (this *Cache) Delete(key string) (bool, error) {
 	// redisLockobj.Lock()
+	this.conn()
 	rs, err := this.client.Del(key)
 	// redisLockobj.Unlock()
 	return rs, err
@@ -79,6 +90,7 @@ func (this *Cache) Delete(key string) (bool, error) {
 
 func (this *Cache) Incr(key string) (int64, error) {
 	// redisLockobj.Lock()
+	this.conn()
 	rs, err := this.client.Incr(key)
 	// redisLockobj.Unlock()
 	return rs, err
@@ -86,6 +98,7 @@ func (this *Cache) Incr(key string) (int64, error) {
 
 func (this *Cache) Decr(key string) (int64, error) {
 	// redisLockobj.Lock()
+	this.conn()
 	rs, err := this.client.Decr(key)
 	// redisLockobj.Unlock()
 	return rs, err
@@ -93,6 +106,7 @@ func (this *Cache) Decr(key string) (int64, error) {
 
 func (this *Cache) IsExist(key string) (bool, error) {
 	// redisLockobj.RLock()
+	this.conn()
 	flag, err := this.client.Exists(key)
 	// redisLockobj.Unlock()
 	return flag, err
@@ -100,12 +114,14 @@ func (this *Cache) IsExist(key string) (bool, error) {
 
 func (this *Cache) ClearAll() error {
 	// redisLockobj.RLock()
+	this.conn()
 	err := this.client.Flush(false)
 	// redisLockobj.Unlock()
 	return err
 }
 
 func (this *Cache) GetString(key string) string {
+	this.conn()
 	val := this.Get(key)
 	return string(val)
 }
