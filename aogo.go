@@ -47,6 +47,7 @@ func main() {
 	)
 	for {
 		select {
+
 		case event := <-Watch.Events:
 			log.Printf("Monitor event %s", event.String())
 			if !cron {
