@@ -7,6 +7,7 @@ type DBParamer struct {
 }
 
 func DBParamerNew(format string, args ...interface{}) *DBParamer {
+
 	return &DBParamer{format: format, args: args, index: 1}
 }
 
@@ -29,7 +30,7 @@ func (this *DBParamer) AppendwithSplit(split, format string, args ...interface{}
 	if this.index == 1 {
 		this.format = " (" + this.format + ") "
 	}
-	this.format = this.format + " " + " (" + format + ") "
+	this.format = this.format + split + " (" + format + ") "
 	this.args = append(this.args, args...)
 	this.index = this.index + 1
 	return this

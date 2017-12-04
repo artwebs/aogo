@@ -2,6 +2,7 @@ package db
 
 import (
 	"log"
+	"strings"
 
 	aolog "github.com/artwebs/aogo/log"
 	"github.com/astaxie/beego/config"
@@ -14,7 +15,7 @@ type Table struct {
 	db                                        DBInterface
 }
 
-func TableNew(tb string, args ...string) (*Table, error) {
+func TableNew(tb string, args ...string) *Table {
 	var err error
 	var dbPrifix, driverName, dataSourceName, tabPrifix string
 	for i, v := range args {
@@ -30,7 +31,7 @@ func TableNew(tb string, args ...string) (*Table, error) {
 	cobj, err := config.NewConfig("ini", "app.conf")
 	if err != nil {
 		log.Fatalln("no app.conf")
-		return nil, err
+		return nil
 	}
 
 	driverName = cobj.String(dbPrifix + "DataBase::driverName")
@@ -43,13 +44,16 @@ func TableNew(tb string, args ...string) (*Table, error) {
 	db := Selector(driverName, dataSourceName)
 	table := &Table{db: db, name: tb}
 	table.SetPrefix(tabPrifix)
-	return table, nil
+	return table
 }
 
 func (this *Table) Select() ([]map[string]string, error) {
 	sql, param := this.ToSelectasSql()
-	println(sql)
-	println(param)
+	sqllog := sql
+	for _, v := range param {
+		sqllog = strings.Replace(sqllog, "?", "'"+v.(string)+"'", 1)
+	}
+	aolog.Debug(sqllog)
 	return this.db.Query(sql, param...)
 }
 
@@ -114,18 +118,18 @@ func (this *Table) Field(fild string) *Table {
 }
 
 func (this *Table) Where(format string, args ...interface{}) *Table {
-	return this.WhereWithSplit("and", format, args)
+	return this.WhereWithSplit("and", format, args...)
 }
 
 func (this *Table) WhereOr(format string, args ...interface{}) *Table {
-	return this.WhereWithSplit("or", format, args)
+	return this.WhereWithSplit("or", format, args...)
 }
 
 func (this *Table) WhereWithSplit(split, format string, args ...interface{}) *Table {
 	if this.where == nil {
-		this.where = DBParamerNew(format, args)
+		this.where = DBParamerNew(format, args...)
 	} else {
-		this.where.AppendwithSplit(split, format, args)
+		this.where.AppendwithSplit(split, format, args...)
 	}
 	return this
 }
