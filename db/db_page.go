@@ -2,8 +2,7 @@ package db
 
 import (
 	"fmt"
-
-	"github.com/artwebs/aogo/web"
+	"strconv"
 )
 
 type Page struct {
@@ -14,15 +13,17 @@ func PageNew(page, pageSize int) *Page {
 	return &Page{page: page, pageSize: pageSize}
 }
 
-func PageNewWithCtx(ctx *web.Context) *Page{
+func PageNewWithCtx(m map[string]interface{}) *Page {
 	obj := &Page{}
-  if page := ctx.Form["page"]{
-    obj.page = strconv.Atoi(page)
-  }
-  if pageSize := ctx.Form["rows"]{
-    obj.pageSize = strconv.Atoi(pageSize)
-  }
-  return obj
+	if page, ok := m["page"]; ok {
+		val, _ := strconv.Atoi(page.(string))
+		obj.page = val
+	}
+	if pageSize, ok := m["rows"]; ok {
+		val, _ := strconv.Atoi(pageSize.(string))
+		obj.pageSize = val
+	}
+	return obj
 }
 
 func (this *Page) GetPage() int {
