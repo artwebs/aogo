@@ -1,5 +1,7 @@
 package db
 
+import "strings"
+
 type DBParamer struct {
 	format string
 	args   []interface{}
@@ -28,10 +30,29 @@ func (this *DBParamer) Append(format string, args ...interface{}) *DBParamer {
 
 func (this *DBParamer) AppendwithSplit(split, format string, args ...interface{}) *DBParamer {
 	if this.index == 1 {
+		this.format = this.format + split + format
+	} else {
+		this.format = this.format + split + format
+	}
+	this.args = append(this.args, args...)
+	this.index = this.index + 1
+	return this
+}
+
+func (this *DBParamer) AppendwithParenthesis(split, format string, args ...interface{}) *DBParamer {
+	if this.index == 1 {
 		this.format = " (" + this.format + ") "
 	}
 	this.format = this.format + split + " (" + format + ") "
 	this.args = append(this.args, args...)
 	this.index = this.index + 1
 	return this
+}
+
+func (this *DBParamer) ToString() string {
+	rs := this.GetFormat()
+	for _, v := range this.GetArgs() {
+		rs = strings.Replace(rs, "?", "'"+v.(string)+"'", 1)
+	}
+	return rs
 }

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/artwebs/aogo/cache"
+	aolog "github.com/artwebs/aogo/log"
 )
 
 var dbs = make(map[string]DBInterface)
@@ -72,6 +73,7 @@ func (this *DB) Query(s string, args ...interface{}) ([]map[string]string, error
 }
 
 func (this *DB) QueryNoConn(conn func(), s string, args ...interface{}) ([]map[string]string, error) {
+	aolog.Debug(DBParamerNew(s, args...).ToString())
 	result := []map[string]string{}
 	conn()
 	rows, err := this.sqlDb.Query(s, args...)
@@ -111,6 +113,7 @@ func (this *DB) Exec(sql string, args ...interface{}) (sql.Result, error) {
 }
 
 func (this *DB) ExecNoConn(conn func(), sql string, args ...interface{}) (sql.Result, error) {
+	aolog.Debug(DBParamerNew(sql, args...).ToString())
 	conn()
 	stmt, err := this.sqlDb.Prepare(sql)
 	if err != nil {
