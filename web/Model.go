@@ -8,7 +8,7 @@ import (
 	// "strconv"
 
 	"github.com/artwebs/aogo/db"
-	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 )
 
 func D(model ModelInterface, args ...string) ModelInterface {
@@ -55,7 +55,7 @@ func (this *Model) Init(args ...string) {
 		Cobj = db.OpenDBCache(CobjName, CobjConfig)
 	}
 	if err != nil {
-		aolog.InfoTag(this, "dataSourceName", dataSourceName)
+		logger.InfoTag(this, "dataSourceName", dataSourceName)
 	}
 	this.Drv = db.Drivers(driverName)
 	this.Drv.Init(driverName, dataSourceName, tabPrifix)

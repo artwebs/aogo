@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/artwebs/aogo/utils"
 	_ "github.com/astaxie/beego/cache/memcache"
 	_ "github.com/astaxie/beego/cache/redis"
@@ -42,7 +42,7 @@ func (this *Cache) Get(key string) []byte {
 	rs, err := this.client.Get(key)
 	// redisLockobj.RUnlock()
 	if err != nil {
-		log.ErrorTag(this, err)
+		logger.ErrorTag(this, err)
 		return nil
 	}
 	return rs
@@ -56,14 +56,14 @@ func (this *Cache) Put(key string, val []byte, timeout int64) (bool, error) {
 	err = this.client.Set(key, val)
 	// redisLockobj.Unlock()
 	if err != nil {
-		log.ErrorTag(this, err)
+		logger.ErrorTag(this, err)
 		return flag, err
 	}
 	// redisLockobj.Lock()
 	flag, err = this.client.Expire(key, timeout)
 	// redisLockobj.Unlock()
 	if err != nil {
-		log.ErrorTag(this, err)
+		logger.ErrorTag(this, err)
 		return flag, err
 	}
 	return flag, err

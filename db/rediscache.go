@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/artwebs/aogo/utils"
 	"github.com/hoisie/redis"
 )
@@ -29,7 +29,7 @@ func (this *RedisCache) AddCache(table, key, value string) error {
 		this.client.Rpush(table, []byte(key))
 		this.client.Set(key, []byte(value))
 	} else {
-		log.ErrorTag(this, err1)
+		logger.ErrorTag(this, err1)
 	}
 	return nil
 }
@@ -57,7 +57,7 @@ func (this *RedisCache) IsExist(key string) bool {
 	}
 	flag, err := this.client.Exists(key)
 	if err != nil {
-		log.ErrorTag(this, err)
+		logger.ErrorTag(this, err)
 	}
 	return flag
 }

@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/artwebs/aogo/cache"
-	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/artwebs/aogo/utils"
 )
 
@@ -202,21 +202,19 @@ func (this *Driver) QueryNoConn(conn func(), s string, args ...interface{}) ([]m
 	if this.dbCache != nil && this.dbCache.IsExist(this.cacheKey) {
 		val, err := this.dbCache.GetCache(this.cacheKey)
 		if err == nil {
-			// aolog.InfoTag(this, " get =>"+this.cacheKey)
 			rbyte, err := base64.StdEncoding.DecodeString(val)
 			if err == nil {
 				err := json.Unmarshal(rbyte, &result)
-				// aolog.InfoTag(this, " get =>", result)
 				if err == nil {
 					return result, nil
 				} else {
-					aolog.InfoTag(this, err, val)
+					logger.InfoTag(this, err, val)
 				}
 
 			}
 		}
 	}
-	aolog.Info(s, args)
+	logger.Info(s, args)
 	conn()
 	rows, err := this.db.Query(s, args...)
 	if err != nil {
@@ -248,12 +246,9 @@ func (this *Driver) QueryNoConn(conn func(), s string, args ...interface{}) ([]m
 	}
 	rows.Close()
 	if this.dbCache != nil {
-		// aolog.InfoTag(this, " save "+this.cacheKey)
 		rbyte, err := json.Marshal(result)
 		if err == nil {
-			// aolog.InfoTag(this, " save =>", result)
 			this.dbCache.AddCache(strings.ToLower(this.TabPrifix+this.TabName), this.cacheKey, base64.StdEncoding.EncodeToString(rbyte))
-			// aolog.InfoTag(this, this.dbCache.AddCache(this.TabName, this.cacheKey, base64.StdEncoding.EncodeToString(rbyte)))
 		}
 	}
 	return result, nil
@@ -288,7 +283,7 @@ func (this *Driver) Exec(sql string, args ...interface{}) (sql.Result, error) {
 
 func (this *Driver) ExecNoConn(conn func(), sql string, args ...interface{}) (sql.Result, error) {
 	defer this.Reset()
-	aolog.InfoTag(this, sql, args, this.dbCache)
+	logger.InfoTag(this, sql, args, this.dbCache)
 	if this.dbCache != nil {
 		this.dbCache.DelCache(strings.ToLower(this.TabPrifix + this.TabName))
 	}

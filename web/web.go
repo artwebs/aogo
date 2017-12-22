@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/artwebs/aogo/utils"
 )
 
@@ -27,9 +27,7 @@ func init() {
 	InitAppConfig()
 	InitSession()
 	register = NewControllerRegistor()
-	aolog.NewLogger(1000)
-	aolog.SetLogger("console", "")
-	aolog.SetLevel(aolog.LevelDebug)
+	logger.SetLevel(logger.LoggerDebug)
 }
 
 func Run() {
@@ -40,11 +38,12 @@ func Run() {
 	}
 	register.tree.PrintTree("")
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second, WriteTimeout: 5 * time.Second}
-	aolog.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
+	logger.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
+	logger.Info(Debug)
 	if Debug == 1 {
-		aolog.SetLevel(aolog.LevelDebug)
+		logger.SetLevel(logger.LoggerDebug)
 	} else {
-		aolog.SetLevel(aolog.LevelError)
+		logger.SetLevel(logger.LoggerError)
 	}
 	err := conn.ListenAndServe()
 	if err != nil {

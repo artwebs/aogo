@@ -4,7 +4,7 @@ import (
 	"log"
 	"strconv"
 
-	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/astaxie/beego/config"
 )
 
@@ -46,7 +46,7 @@ func TableNew(tb string, args ...string) *Table {
 	}
 
 	if err != nil {
-		aolog.Info("db::Table", "dataSourceName", dataSourceName)
+		logger.Info("db::Table", "dataSourceName", dataSourceName)
 	}
 	db := Selector(driverName, dataSourceName)
 	table := &Table{db: db, name: tb, defaultParam: []interface{}{}}
@@ -85,7 +85,7 @@ func (this *Table) Total(args ...interface{}) int64 {
 	if this.having != "" {
 		dp.Append(" having " + this.having)
 	}
-	aolog.Debug(dp.ToString())
+	logger.DebugTag(this, dp.ToString())
 	data, _ := this.db.Query(dp.GetFormat(), dp.GetArgs()...)
 	i, err := strconv.ParseInt(data[0]["c"], 10, 64)
 	if err != nil {

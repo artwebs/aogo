@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 
 	_ "github.com/lib/pq"
 )
@@ -24,9 +24,9 @@ func (this *Postgresql) QueryRowNoConn(conn func(), s string, args ...interface{
 	var result map[string]string
 	s = this.addLimit(s)
 	rows, err := this.QueryNoConn(conn, s, args...)
-	aolog.InfoTag(this, rows)
+	logger.InfoTag(this, rows)
 	if err != nil {
-		aolog.InfoTag(this, err)
+		logger.InfoTag(this, err)
 		return result, err
 	}
 	if len(rows) > 0 {

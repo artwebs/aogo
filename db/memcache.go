@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
@@ -24,15 +24,15 @@ func (this *Memcache) AddCache(table, key, value string) error {
 	}
 	_, err1 := this.mcObj.Get(key)
 	if err1 != nil {
-		log.InfoTag(this, "AddCache", err1)
+		logger.InfoTag(this, "AddCache", err1)
 		// log.InfoTag(this, "AddCache", table, key, value)
 		err := this.mcObj.Set(&memcache.Item{Key: table, Value: []byte(key), Expiration: int32(timeOutDuration)})
 		if err != nil {
-			log.InfoTag(this, "AddCache", err)
+			logger.InfoTag(this, "AddCache", err)
 		}
 		err = this.mcObj.Set(&memcache.Item{Key: key, Value: []byte(value)})
 		if err != nil {
-			log.InfoTag(this, "AddCache", err)
+			logger.InfoTag(this, "AddCache", err)
 		}
 	}
 	// if vtemp == nil {
@@ -65,7 +65,7 @@ func (this *Memcache) IsExist(key string) bool {
 	if err == nil {
 		flag = true
 	} else {
-		log.InfoTag(this, "IsExist", err)
+		logger.InfoTag(this, "IsExist", err)
 	}
 	return flag
 }

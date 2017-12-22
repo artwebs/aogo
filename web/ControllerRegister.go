@@ -9,7 +9,7 @@ import (
 	// "regexp"
 	"strings"
 
-	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/artwebs/aogo/utils"
 )
 
@@ -25,7 +25,7 @@ func NewControllerRegistor() *ControllerRegistor {
 func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Error(err)
+			logger.Error(err)
 			debug.PrintStack()
 		}
 	}()
@@ -44,13 +44,13 @@ func (this *ControllerRegistor) ServeHTTP(w http.ResponseWriter, r *http.Request
 		this.doController(data, urlarr, handler, w, r)
 		etime := time.Now()
 		_, port, _ := utils.HttpClientIP(r)
-		log.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), "[", port, "]", url)
+		logger.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), "[", port, "]", url)
 		return
 	}
 	etime := time.Now()
 	_, port, _ := utils.HttpClientIP(r)
-	log.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), "[", port, "]", url)
-	log.ErrorTag(this, url+" do not find")
+	logger.InfoTag(this, "[", etime.Sub(stime), "]", r.Header.Get("X-Real-IP"), "[", port, "]", url)
+	logger.ErrorTag(this, url+" do not find")
 
 }
 
@@ -58,7 +58,7 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 	defer func() {
 		err := r.Body.Close()
 		if err != nil {
-			log.ErrorTag(this, "关闭http response 失败", err)
+			logger.ErrorTag(this, "关闭http response 失败", err)
 		}
 	}()
 	switch handler := h.(type) {
@@ -81,7 +81,7 @@ func (this *ControllerRegistor) doController(data, urlarr []string, h interface{
 		handler.ServeHTTP(w, r)
 		break
 	default:
-		log.ErrorTag(this, h, " do not find")
+		logger.ErrorTag(this, h, " do not find")
 	}
 
 }

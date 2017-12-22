@@ -14,7 +14,7 @@ import (
 
 	"github.com/artwebs/aogo/utils"
 
-	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 )
 
 type Controller struct {
@@ -66,7 +66,6 @@ func (this *Context) Init(w http.ResponseWriter, r *http.Request, ctl Controller
 			index += 2
 		}
 	}
-	// aolog.DebugTag(this, "r.Form ", r.Form)
 	r.ParseForm()
 	for k, v := range r.Form {
 		if len(v) > 0 {
@@ -75,7 +74,6 @@ func (this *Context) Init(w http.ResponseWriter, r *http.Request, ctl Controller
 			this.Form[k] = v
 		}
 	}
-	// aolog.DebugTag(this, "Form ", this.Form)
 
 }
 
@@ -154,9 +152,9 @@ func (this *Context) Template(args ...string) string {
 
 func (this *Context) Display(args ...string) {
 	tpl := this.Template(args...)
-	aolog.InfoTag(this, tpl)
+	logger.InfoTag(this, tpl)
 	if _, err := os.Stat(tpl); err != nil {
-		aolog.ErrorTag(this, "file "+tpl+" do not exist")
+		logger.ErrorTag(this, "file "+tpl+" do not exist")
 		return
 	}
 

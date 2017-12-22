@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 )
 
 type RouterTree struct {
@@ -92,7 +92,7 @@ func (this *RouterTree) splitPath(prefix string) []string {
 }
 
 func (this *RouterTree) PrintTree(pprefix string) {
-	log.InfoTag(this, pprefix+this.prefix, this.runObject)
+	logger.InfoTag(this, pprefix+this.prefix, this.runObject)
 	if c := this.child; c != nil {
 		for _, s := range c {
 			tmp := pprefix + this.prefix + "/"
