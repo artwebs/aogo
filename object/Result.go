@@ -7,6 +7,7 @@ import (
 
 type Result struct {
 	Code    int
+	Count   int
 	Message string
 	Data    interface{}
 }
@@ -15,6 +16,11 @@ func (this Result) SetData(d interface{}) Result {
 	if d != nil {
 		this.Data = d
 	}
+	return this
+}
+
+func (this Result) SetCount(c int) Result {
+	this.Count = c
 	return this
 }
 
