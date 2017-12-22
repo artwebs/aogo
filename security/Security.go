@@ -21,7 +21,39 @@ type ISecurity interface {
 	Encrypt(key, data []byte) ([]byte, error)
 	Decrypt(key, data []byte) ([]byte, error)
 	EncryptString(key, data string) (string, error)
+	EncryptStringWithIV(key, iv, data string) (string, error)
 	DecryptString(key, data string) (string, error)
+	DecryptStringWithIV(key, iv, data string) (string, error)
+}
+
+type Secret struct {
+	Key string
+	Iv  string
+}
+
+func Encrypt(sn, val string, desObj ISecurity, secrets map[string]Secret) string {
+	if val == "" {
+		return ""
+	}
+	secret := secrets[sn]
+	crypted1, err := desObj.EncryptStringWithIV(secret.Key, secret.Iv, val)
+	if err != nil {
+		return ""
+	}
+	return sn + crypted1
+}
+
+func Decrypt(val string, desObj ISecurity, secrets map[string]Secret) string {
+	if val == "" {
+		return ""
+	}
+	sn := val[0:2]
+	secret := secrets[sn]
+	crypted1, err := desObj.DecryptStringWithIV(secret.Key, secret.Iv, val[2:len(val)])
+	if err != nil {
+		return ""
+	}
+	return crypted1
 }
 
 type Security struct {

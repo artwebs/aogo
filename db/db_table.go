@@ -41,7 +41,9 @@ func TableNew(tb string, args ...string) *Table {
 
 	driverName = cobj.String(dbPrifix + "DataBase::driverName")
 	dataSourceName = cobj.String(dbPrifix + "DataBase::dataSourceName")
-	tabPrifix = cobj.String(dbPrifix + "DataBase::tabPrifix")
+	if tabPrifix == "" {
+		tabPrifix = cobj.String(dbPrifix + "DataBase::tabPrifix")
+	}
 
 	if err != nil {
 		aolog.Info("db::Table", "dataSourceName", dataSourceName)
