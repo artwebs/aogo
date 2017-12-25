@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	register     *ControllerRegistor
-	exceptMethod = []string{"Init", "WillDid", "Release"}
+	register           *ControllerRegistor
+	exceptMethod       = []string{"Init", "WillDid", "Release"}
+	LoggerLevelDefault int
 )
 
 type Handler struct {
@@ -39,12 +40,12 @@ func Run() {
 	register.tree.PrintTree("")
 	conn := &http.Server{Addr: HttpAddress + ":" + strconv.Itoa(HttpPort), Handler: register, ReadTimeout: 5 * time.Second, WriteTimeout: 5 * time.Second}
 	logger.Info("server " + HttpAddress + ":" + strconv.Itoa(HttpPort) + " started")
-	logger.Info(Debug)
 	if Debug == 1 {
-		logger.SetLevel(logger.LoggerDebug)
+		LoggerLevelDefault = logger.LoggerDebug
 	} else {
-		logger.SetLevel(logger.LoggerError)
+		LoggerLevelDefault = logger.LoggerError
 	}
+	logger.SetLevel(LoggerLevelDefault)
 	err := conn.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)

@@ -18,8 +18,8 @@ const (
 )
 
 var LoggerLevel = LoggerDebug
-var LoggerText = map[int]string{LoggerFatal: "Fatal", LoggerError: "Error", LoggerWarn: "Warn", LoggerNotice: "Notice", LoggerInfo: "Info", LoggerDebug: "Debug"}
-var LoggerColor = map[int]string{LoggerFatal: "\033[0;35;47m ", LoggerWarn: "\033[0;31;47m ", LoggerDebug: "\033[0;33;48m"}
+var LoggerText = map[int]string{LoggerFatal: "Fatal ", LoggerError: "Error ", LoggerWarn: "Warn  ", LoggerNotice: "Notice", LoggerInfo: "Info  ", LoggerDebug: "Debug "}
+var LoggerColor = map[int]string{LoggerFatal: "\033[0;36;48m", LoggerError: "\033[0;35;48m", LoggerWarn: "\033[0;31;48m", LoggerNotice: "\033[0;33;48m", LoggerInfo: "\033[0;32;48m", LoggerDebug: "\033[0;34;48m"}
 
 // SetLogLevel sets the global log level used by the simple
 // logger.
@@ -96,7 +96,6 @@ func generateFmtStr(n int) string {
 }
 
 func print(l int, v ...interface{}) {
-	fmt.Println(l, LoggerLevel)
 	if l <= LoggerLevel {
 		text := ""
 		color := ""
