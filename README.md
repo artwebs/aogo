@@ -19,10 +19,10 @@
 ```
 #### 默认加解密
 ```
-1、加密：security.Encrypt(sn, val, desObj, secrets)
 #sn 加密序号
 #val加密值
 #desObj加密值如security.NewSecurityDES()  
-#secrets 密钥
-2、解密：security.Decrypt(val, desObj, secrets) 
+#secrets 密钥 map[string]security.Secret{"01": security.Secret{Key: "xxxxxxxx", Iv: "xxxxxxxx"}}
+1、加密：security.Encrypt(sn, val, desObj, secrets)
+2、解密：security.Decrypt(val, desObj, secrets)
 ```
