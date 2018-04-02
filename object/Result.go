@@ -6,26 +6,16 @@ import (
 )
 
 type Result struct {
-	Code    int
-	Count   int
-	Message string
-	Data    interface{}
+	data map[string]interface{}
 }
 
-func (this Result) SetData(d interface{}) Result {
-	if d != nil {
-		this.Data = d
-	}
-	return this
-}
-
-func (this Result) SetCount(c int) Result {
-	this.Count = c
+func (this Result) Append(key string, val interface{}) Result {
+	this.data[key] = val
 	return this
 }
 
 func (this Result) String() string {
-	b, err := json.Marshal(this)
+	b, err := json.Marshal(this.data)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
@@ -33,17 +23,21 @@ func (this Result) String() string {
 }
 
 func ResultNew(flag bool, success, fail string) Result {
+	rs := Result{data: map[string]interface{}{}}
 	if flag {
-		return Result{Code: 1, Message: success}
+		rs.data["code"] = 1
+		rs.data["message"] = success
 	} else {
-		return Result{Code: -1, Message: success}
+		rs.data["code"] = 1
+		rs.data["message"] = success
 	}
+	return rs
 }
 
-func ResultNewSuccess(msg string, d interface{}) Result {
-	return Result{Code: 1, Message: msg, Data: d}
+func ResultNewSuccess(msg string) Result {
+	return Result{data: map[string]interface{}{"code": 1, "message": msg}}
 }
 
-func ResultNewFail(msg string, d interface{}) Result {
-	return Result{Code: -1, Message: msg, Data: d}
+func ResultNewFail(msg string) Result {
+	return Result{data: map[string]interface{}{"code": 0, "message": msg}}
 }
