@@ -1,7 +1,7 @@
 package main
 
 import (
-	aolog "github.com/artwebs/aogo/log"
+	"github.com/artwebs/aogo/logger"
 	"github.com/artwebs/aogo/web"
 )
 
@@ -31,18 +31,18 @@ func (this *TestController) Index(ctx *web.Context) {
 	// model.DBPrifix = "PG"
 	// model := NewPgUser()
 	web.D(model, "PG")
-	// aolog.Info(model.Insert(map[string]interface{}{"name": "test"}))
-	// aolog.Info(model.Where("id=?", 1).Update(map[string]interface{}{"name": "test1"}))
-	// aolog.Info(model.Where("id=?",16).Delete())
-	// aolog.Info(model.Query("select * from user"))
-	// aolog.Info(model.Where("id=?",1).Find())
-	// aolog.Info(model.Total())
-	// aolog.Info(model.Where("id=?",1).Total())
-	aolog.Info(model.Order("id desc").Select())
+	// logger.Info(model.Insert(map[string]interface{}{"name": "test"}))
+	// logger.Info(model.Where("id=?", 1).Update(map[string]interface{}{"name": "test1"}))
+	// logger.Info(model.Where("id=?",16).Delete())
+	// logger.Info(model.Query("select * from user"))
+	// logger.Info(model.Where("id=?",1).Find())
+	// logger.Info(model.Total())
+	// logger.Info(model.Where("id=?",1).Total())
+	logger.Info(model.Order("id desc").Select())
 	if user, ok := ctx.Form["user"]; ok {
 		ctx.SetSession("user", user)
 	}
-	aolog.Info(ctx.Data)
+	logger.Info(ctx.Data)
 	tmp := make(map[string]interface{})
 	tmp["a"] = 1
 	tmp["b"] = "jom"
@@ -52,7 +52,7 @@ func (this *TestController) Index(ctx *web.Context) {
 }
 
 func (this *TestController) TestTpl(ctx *web.Context) {
-	aolog.Info(ctx.GetSession("user"))
+	logger.Info(ctx.GetSession("user"))
 	ctx.Data["name"] = "hello"
 	ctx.Display()
 }
@@ -80,6 +80,6 @@ type UserModel struct {
 }
 
 func (this *UserModel) DoTest() {
-	aolog.Info("DoTest")
+	logger.Info("DoTest")
 
 }
