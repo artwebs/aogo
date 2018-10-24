@@ -365,3 +365,12 @@ func FailOnErrorTag(tag interface{}, err error, msg string) {
 		log.Panic(Tag(tag), err, msg)
 	}
 }
+
+func Try(fun func(), handler func(interface{})) {
+	defer func() {
+		if err := recover(); err != nil {
+			handler(err)
+		}
+	}()
+	fun()
+}
